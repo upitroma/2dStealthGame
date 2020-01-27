@@ -11,13 +11,14 @@ var playerStabSpeed=400
 var fov=45
 var viewDist=100
 
-//server just relays data, PseudoServer manages the game 
-var isPseudoServer = false
-
 //get html assets
 var canvas = document.getElementById('canvas'),
     context = canvas.getContext('2d'),
-    serverInfo = document.getElementById("serverinfo");
+    serverInfo = document.getElementById("serverinfo"),
+    isServerCheckBoxDEBUGGING = document.getElementById("amServer(DEBUGGING)");
+
+//server just relays data, PseudoServer manages the game 
+var isPseudoServer = isServerCheckBoxDEBUGGING.checked
 
 //hide scrollbar
 //document.body.style.overflow = 'hidden';
@@ -46,19 +47,25 @@ var pastKeys = []
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+//graphics--------------
+function drawBackground(){
+    context.fillStyle = "red"
+    context.fillRect(0, 0, canvas.width, canvas.height)
+}
 
 //game logic------------------------------------
-
 //client
 var visiblePlayers=[]
 
 //PseudoServer
 var allPlayers=[]
-
 //update loop------------------------------------
 var uploadtimer=0
 window.onload = function(){
+    
     function update(deltatime){
+
+        
         // ten times/second
         /*
         37 left
@@ -68,7 +75,9 @@ window.onload = function(){
         81 q
         69 e
         */
-        canvas.width=canvas.width;//refresh canvas
+        canvas.width=canvas.width//refresh canvas
+
+        drawBackground()
 
 
         //render visible players
@@ -87,7 +96,7 @@ window.onload = function(){
                 //send data
                 uploadtimer+=deltatime
                 if(uploadtimer>uploadrate){
-                    updatePlayer(p)
+                    //updatePlayer(p)
                 }
                 
 
@@ -129,12 +138,6 @@ function updatePlayer(p){
     });
 }
 
-function amHit(b){
-    socket.emit("amHit",{
-        bulletId: b.bulletId,
-        shooterId: b.shooterId
-    })
-}
 
 //listen for server events
 
@@ -189,4 +192,4 @@ socket.on("playerdata",function(data){
             players.push(new player(data.position,data.id))
         }
     }
-});
+})
