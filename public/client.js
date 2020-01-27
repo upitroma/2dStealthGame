@@ -3,9 +3,16 @@ var socket = io.connect(window.location.href);//change to server's location
 var mySocketId = -1
 
 var uploadrate=.3
-var fireRate=1
-var startingHealth=5
 
+//constants
+var playerMoveSpeed=200
+var playerStabSpeed=400
+
+var fov=45
+var viewDist=100
+
+//server just relays data, PseudoServer manages the game 
+var isPseudoServer = false
 
 //get html assets
 var canvas = document.getElementById('canvas'),
@@ -13,24 +20,22 @@ var canvas = document.getElementById('canvas'),
     serverInfo = document.getElementById("serverinfo");
 
 //hide scrollbar
-document.body.style.overflow = 'hidden';
+//document.body.style.overflow = 'hidden';
 
 
 //define objects
 class player{
-    constructor(x,y, id){
+    constructor(x,y,id){
         this.x=x;
         this.y=y;
         this.id=id;
         this.isActive=true;
-        this.colorId = 2;
-        this.health=startingHealth;
     }
 }
 
 
 
-//handle inputs
+//handle inputs-----------------------------
 var keys = [];
 window.onkeyup = function(e) { keys[e.keyCode] = false; }
 window.onkeydown = function(e) { keys[e.keyCode] = true; } 
@@ -38,45 +43,20 @@ window.onkeydown = function(e) { keys[e.keyCode] = true; }
 var pastKeys = []
 
 //canvas setup----------------------------
-
-
-
-var players=[];
-var bullets=[];
-
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-
-var bordery=(window.innerHeight/2)-100
-var borderh=50
-var borderm=100
-var hudw=100//less than borderm
-function drawBorder(){
-
-    context.fillStyle = "black"
-    context.fillRect(0, 0, canvas.width, canvas.height);
-
-    context.fillStyle= 'white'
-    context.fillRect(borderm,bordery,canvas.width-(2*borderm),borderh);
-}
-function drawHud(health){
-    context.fillStyle= 'grey'
-    //context.fillRect(borderm-hudw,bordery,hudw,borderh)
-
-    context.fillStyle="pink"
-    var x=(hudw*.9)/startingHealth
-    for (i=0;i<health;i++){
-        context.fillRect(borderm-(hudw*.9)+(x*i),bordery,x/2,borderh)
-    }
-}
 
 
 //game logic------------------------------------
 
+//client
+var visiblePlayers=[]
+
+//PseudoServer
+var allPlayers=[]
+
+//update loop------------------------------------
 var uploadtimer=0
-var fireTimer=0
-var bulletId=0
-var amDead=false//for own player
 window.onload = function(){
     function update(deltatime){
         // ten times/second
@@ -89,76 +69,19 @@ window.onload = function(){
         69 e
         */
         canvas.width=canvas.width;//refresh canvas
-        drawBorder()
-
-        //render players
-        players.forEach(function(p){
-            
-            //get color
-            var color
-            if(p.colorId==0){color="red"}
-            else if(p.colorId==1){color="green"}
-            else if(p.colorId==2){color="blue"}
 
 
-            if(p.id==mySocketId){
+        //render visible players
+        visiblePlayers.forEach(function(p){
 
-                drawHud(p.health)
+            //move player
+            if(p.id==mySocketId){//if me
 
-                if(!amDead){//disable player if dead
-
-                    if(keys[65]){
-                        p.position-=200*deltatime//200
-                    }
-                    if(keys[68]){
-                        p.position+=200*deltatime//200
-                    }
-
-                    //change color
-                    if(keys[69]&&!pastKeys[69]){
-                        p.colorId++
-                        pastKeys[69]=true
-                    }
-                    else if(!keys[69]){
-                        pastKeys[69]=false
-                    }
-                    if(keys[81]&&!pastKeys[81]){
-                        p.colorId--
-                        pastKeys[81]=true
-                    }
-                    else if(!keys[81]){
-                        pastKeys[81]=false
-                    }
-                    //loop color
-                    if(p.colorId<0){
-                        p.colorId=2
-                    }
-                    if(p.colorId>2){
-                        p.colorId=0
-                    }
-
-                    //fire bullet
-                    fireTimer+=deltatime
-
-                    if(fireTimer>fireRate){
-                        bulletId++
-                        if(keys[37]&&!pastKeys[37]){
-                            fireBullet(p,-1,bulletId)
-                            pastKeys[37]=true
-                            fireTimer=0
-                        }
-                        else if(!keys[37]){
-                            pastKeys[37]=false
-                        }
-                        if(keys[39]&&!pastKeys[39]){
-                            fireBullet(p,1,bulletId)
-                            pastKeys[39]=true
-                            fireTimer=0
-                        }
-                        else if(!keys[39]){
-                            pastKeys[39]=false
-                        }
-                    }
+                if(keys[65]){
+                    p.position-=playerMoveSpeed*deltatime
+                }
+                if(keys[68]){
+                    p.position+=playerMoveSpeed*deltatime
                 }
 
                 //send data
@@ -168,49 +91,15 @@ window.onload = function(){
                 }
                 
 
-                //clamp coordinate within the border
-                p.position=Math.max(borderm, Math.min(p.position, canvas.width-borderh-borderm))
-                context.fillStyle= color;
-                if(amDead){context.fillStyle="grey"}
-                context.fillRect(p.position,bordery,borderh,borderh);
-
-                //identify me
-                context.fillStyle= 'gold';
-                context.fillRect(p.position+(borderh*.45),bordery,borderh-(borderh*.9),borderh);
-
-                //collision
-                bullets.forEach(function(b){
-                    if(p.health>0){
-                        if(b.isActive){
-                            if(b.position< (p.position+(borderh/2)) && (b.position>p.position)){ //idk why borderh/2 but it just works
-                                //bullet is touching
-                                if(b.colorId!=p.colorId){
-                                    //colors don't match
-                                    p.health--
-                                    if(p.health<1){
-                                        amDead=true
-                                        IDead(p)
-                                    }
-                                    b.isActive=false
-                                    amHit(b)
-                                }
-                            }
-                        }
-                    }
-                });
+                
             }
-            else if(p.isActive){
-
-                //clamp coordinate within the border
-                p.position=Math.max(borderm, Math.min(p.position, canvas.width-borderh-borderm))
-                context.fillStyle= color;
-                if(p.health<1){
-                    context.fillStyle="grey"
-                }
-                context.fillRect(p.position,bordery,borderh,borderh);
+            else if(p.isActive){//if other player
+                //render other players
             }
             
         });
+
+
         context.stroke();
  
     }
