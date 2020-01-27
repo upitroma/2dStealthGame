@@ -29,6 +29,7 @@ class player{
     constructor(x,y,id){
         this.x=x;
         this.y=y;
+        this.angle;
         this.id=id;
         this.isActive=true;
     }
@@ -54,11 +55,13 @@ function drawBackground(){
 }
 
 //game logic------------------------------------
+
 //client
 var visiblePlayers=[]
 
 //PseudoServer
 var allPlayers=[]
+
 //update loop------------------------------------
 var uploadtimer=0
 window.onload = function(){
@@ -133,8 +136,8 @@ window.onload = function(){
 //emmit events
 function updatePlayer(p){
     socket.emit("playerdata",{
-        position: p.position,
-        colorId: p.colorId
+        x: p.x,
+        y: p.y,
     });
 }
 
