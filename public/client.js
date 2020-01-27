@@ -18,24 +18,16 @@ document.body.style.overflow = 'hidden';
 
 //define objects
 class player{
-    constructor(position, id){
-        this.position=position;
+    constructor(x,y, id){
+        this.x=x;
+        this.y=y;
         this.id=id;
         this.isActive=true;
         this.colorId = 2;
         this.health=startingHealth;
     }
 }
-class bullet{
-    constructor(position, colorId, shooterId, direction,bulletId){
-        this.position=position
-        this.colorId=colorId
-        this.shooterId=shooterId
-        this.isActive=true
-        this.direction=direction //1=right, -1=left
-        this.bulletId=bulletId
-    }
-}
+
 
 
 //handle inputs
@@ -98,29 +90,6 @@ window.onload = function(){
         */
         canvas.width=canvas.width;//refresh canvas
         drawBorder()
-
-        //render bullets
-        bullets.forEach(function(b){
-            if(b.isActive){
-                //get color
-                var color
-                if(b.colorId==0){color="red"}
-                else if(b.colorId==1){color="green"}
-                else if(b.colorId==2){color="blue"}
-
-                //move bullet
-                b.position += ((b.colorId*100)+250)*deltatime*b.direction
-                
-                //wrap bullet
-                if(b.position>canvas.width-(borderm)){b.position=borderm}
-                else if(b.position<borderm){b.position=canvas.width-(borderm)}
-
-
-                //render bullet
-                context.fillStyle=color;
-                context.fillRect(b.position+(borderh*.45),bordery,borderh-(borderh*.9),borderh);
-            }
-        });
 
         //render players
         players.forEach(function(p){
@@ -271,15 +240,6 @@ function updatePlayer(p){
     });
 }
 
-function fireBullet(p,direction,bulletId){
-    socket.emit("fireBullet",{
-        startPosition: p.position,
-        direction: direction,
-        colorId: p.colorId,
-        bulletId: bulletId
-    });
-}
-
 function amHit(b){
     socket.emit("amHit",{
         bulletId: b.bulletId,
@@ -287,51 +247,8 @@ function amHit(b){
     })
 }
 
-function IDead(p){
-    socket.emit("IDead",null)
-}
-
 //listen for server events
-socket.on("fireBullet",function(data){
-    bullets.push(new bullet(data.startPosition,data.colorId,data.shooterId,data.direction,data.bulletId))
-});
 
-socket.on("IDead",function(data){
-    for( var i = 0; i < players.length; i++){ 
-        if ( players[i].id == data) {
-            players[i].health=0
-        }
-    }
-});
-
-socket.on("amHit",function(data){
-    //register hit
-    if(data.hitPlayerId==mySocketId){
-        //I was hit
-        console.log("I was hit by "+data.shooterId)
-    }
-
-    //register kill
-    if(data.shooterId==mySocketId && data.hitPlayerId!=mySocketId){
-        //i got the hit
-        console.log("I shot "+data.hitPlayerId)
-
-        //regen health
-        for( var i = 0; i < players.length; i++){ 
-            if ( players[i].id == mySocketId) {//select me
-                players[i].health++
-                if(players[i].health>startingHealth){players[i].health=startingHealth}//max health
-            }
-        }
-    }
-
-    //destroy bullet
-    bullets.forEach(function(b){
-        if(b.shooterId==data.shooterId && b.bulletId==data.bulletId){
-            b.isActive=false
-        }
-    })
-});
 
 
 socket.on("serverPrivate",function(data){
