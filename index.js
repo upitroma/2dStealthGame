@@ -10,6 +10,18 @@ var server = app.listen(5000,function(){
 //static files
 app.use(express.static("public"))
 
+//host tracking
+class Host{
+    constructor(id){
+        this.id=id
+        this.joinCode=generateHostId()
+        this.isActive=true
+        this.sockets=[]
+    }
+}
+
+var hostLookup=[]
+
 //socket setup
 var io = socket(server)
 
@@ -27,7 +39,9 @@ io.on("connection",function(socket){
     isActiveLookup[socket.id]=true
     lookup[socket.id].emit("serverPrivate",socket.id)
     console.log("client connected on socket: ",socket.id +" Current active sockets: "+getTotalActiveSockets())
+    
     io.sockets.emit("serverMessage","new connection on socket: "+socket.id+". Current active sockets: "+getTotalActiveSockets())
+    
     io.sockets.emit("newPlayer",{
         random: Math.random(),
         id: socket.id
@@ -42,14 +56,12 @@ io.on("connection",function(socket){
         })//needs to be scrubbed
     });
 
-    socket.on("fireBullet",function(data){
-        socket.broadcast.emit("fireBullet",{
-            startPosition: data.startPosition,
-            colorId: data.colorId,
-            direction: data.direction,
-            bulletId: data.bulletId,
-            shooterId: socket.id
-        })//needs to be scrubbed
+    socket.on("newHostPrivate",function(data){
+        hostLookup[socket.id]=new Host(socket.id)
+        lookup[socket.id].emit("newHostPrivate",{
+            joinCode: hostLookup[socket.id].joinCode
+        })
+        console.log(data)
     });
 
     socket.on('disconnect', function(){
@@ -63,7 +75,6 @@ io.on("connection",function(socket){
 
 function getIp(){
     var os = require('os');
-
     var interfaces = os.networkInterfaces();
     var addresses = [];
     for (var k in interfaces) {
@@ -74,7 +85,6 @@ function getIp(){
             }
         }
     }
-
     return addresses
 }
 
@@ -86,4 +96,16 @@ function getTotalActiveSockets(){
         }
     }
     return total
+}
+
+
+
+//security
+var usedIDs=[]
+function generateHostId(){
+    var r = Math.floor(Math.random() * 100000)
+    while (usedIDs.includes(r)){
+        r = Math.floor(Math.random() * 100000)
+    }
+    return r
 }

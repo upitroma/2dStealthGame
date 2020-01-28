@@ -4,21 +4,17 @@ var mySocketId = -1
 
 var uploadrate=.3
 
-//constants
-var playerMoveSpeed=200
-var playerStabSpeed=400
-
-var fov=45
-var viewDist=100
 
 //get html assets
 var canvas = document.getElementById('canvas'),
     context = canvas.getContext('2d'),
     serverInfo = document.getElementById("serverinfo"),
-    isServerCheckBoxDEBUGGING = document.getElementById("amServer(DEBUGGING)");
+    pseudoServerInfo = document.getElementById("pseudoServerInfo"),
+    startServerButton = document.getElementById("startServerButton"),
+    joinCodeInput = document.getElementById("joinCodeInput");
 
 //server just relays data, PseudoServer manages the game 
-var isPseudoServer = isServerCheckBoxDEBUGGING.checked
+var isPseudoServer = false
 
 //hide scrollbar
 //document.body.style.overflow = 'hidden';
@@ -50,17 +46,14 @@ canvas.height = window.innerHeight;
 
 //graphics--------------
 function drawBackground(){
-    context.fillStyle = "red"
+    context.fillStyle = "black"
+    if(isPseudoServer)
+        context.fillStyle = "red"
     context.fillRect(0, 0, canvas.width, canvas.height)
 }
 
 //game logic------------------------------------
 
-//client
-var visiblePlayers=[]
-
-//PseudoServer
-var allPlayers=[]
 
 //update loop------------------------------------
 var uploadtimer=0
@@ -82,6 +75,8 @@ window.onload = function(){
 
         drawBackground()
 
+
+        /*
 
         //render visible players
         visiblePlayers.forEach(function(p){
@@ -111,6 +106,8 @@ window.onload = function(){
             
         });
 
+        */
+
 
         context.stroke();
  
@@ -133,6 +130,15 @@ window.onload = function(){
 
 //networking---------------------------
 
+
+//request to be host
+startServerButton.addEventListener("click", function(){
+    socket.emit("newHostPrivate",{
+        a: "a"
+    })
+    console.log("requested to be host")
+}); 
+
 //emmit events
 function updatePlayer(p){
     socket.emit("playerdata",{
@@ -143,16 +149,19 @@ function updatePlayer(p){
 
 
 //listen for server events
-
-
+socket.on("newHostPrivate"),function(data){
+    pseudoServerInfo.innerHTML=data.joinCode
+}
 
 socket.on("serverPrivate",function(data){
     if(mySocketId==-1){
         //add self to game
         mySocketId=data
+        pseudoServerInfo.innerHTML="connected to server, but not host"
     }
 });
 
+/*
 socket.on("serverPlayerDisconnect",function(data){
 
     for( var i = 0; i < players.length; i++){ 
@@ -164,9 +173,8 @@ socket.on("serverPlayerDisconnect",function(data){
      }
 })
 
-socket.on("newPlayer",function(data){
-    players.push(new player(Math.floor(data.random * (canvas.width-borderh-borderm+1)),data.id))
-})
+*/
+
 
 socket.on("serverMessage",function(data){
     serverInfo.innerHTML="[server]: "+data
