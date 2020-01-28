@@ -133,31 +133,32 @@ window.onload = function(){
 
 //request to be host
 startServerButton.addEventListener("click", function(){
-    socket.emit("newHostPrivate",{
-        a: "a"
-    })
-    console.log("requested to be host")
+    becomeHost()
 }); 
 
 //emmit events
 function updatePlayer(p){
     socket.emit("playerdata",{
         x: p.x,
-        y: p.y,
+        y: p.y
     });
 }
 
-
-//listen for server events
-socket.on("newHostPrivate"),function(data){
-    pseudoServerInfo.innerHTML=data.joinCode
+function becomeHost(){
+    socket.emit("NewHostPlz","plz work");
+    console.log("requested to be host")
 }
+
+
 
 socket.on("serverPrivate",function(data){
     if(mySocketId==-1){
         //add self to game
         mySocketId=data
         pseudoServerInfo.innerHTML="connected to server, but not host"
+    }
+    else{
+        console.log(data)
     }
 });
 

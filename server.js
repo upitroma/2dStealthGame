@@ -3,8 +3,8 @@ var socket = require("socket.io")
 
 //app setup
 var app = express();
-var server = app.listen(5000,function(){
-    console.log("Server is up on http://"+getIp()+":5000")
+var server = app.listen(4000,function(){
+    console.log("Server is up on http://"+getIp()+":4000")
 });
 
 //static files
@@ -12,8 +12,9 @@ app.use(express.static("public"))
 
 //host tracking
 class Host{
-    constructor(id){
-        this.id=id
+    constructor(socket){
+        this.socket=socket
+        this.id=socket.id
         this.joinCode=generateHostId()
         this.isActive=true
         this.sockets=[]
@@ -56,12 +57,12 @@ io.on("connection",function(socket){
         })//needs to be scrubbed
     });
 
-    socket.on("newHostPrivate",function(data){
-        hostLookup[socket.id]=new Host(socket.id)
-        lookup[socket.id].emit("newHostPrivate",{
-            joinCode: hostLookup[socket.id].joinCode
-        })
-        console.log(data)
+    socket.on("NewHostPlz",function(data){
+        
+        //hostLookup[socket.id]=new Host(socket)
+        lookup[socket.id].emit("serverPrivate",socket.id)
+        //hostLookup[socket.id].socket.emit("newHostPrivate",hostLookup[socket.id].joinCode)
+        //console.log(hostLookup[socket.id].id)
     });
 
     socket.on('disconnect', function(){
