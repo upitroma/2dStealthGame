@@ -145,7 +145,7 @@ function updatePlayer(p){
 }
 
 function becomeHost(){
-    socket.emit("NewHostPlz","plz work");
+    socket.emit("BecomeHost","plz work");
     console.log("requested to be host")
 }
 
@@ -157,9 +157,10 @@ socket.on("serverPrivate",function(data){
         mySocketId=data
         pseudoServerInfo.innerHTML="connected to server, but not host"
     }
-    else{
-        console.log(data)
-    }
+});
+
+socket.on("ServerToHost",function(data){
+    console.log(data)
 });
 
 /*

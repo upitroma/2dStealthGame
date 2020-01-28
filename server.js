@@ -57,10 +57,22 @@ io.on("connection",function(socket){
         })//needs to be scrubbed
     });
 
-    socket.on("NewHostPlz",function(data){
+    socket.on("BecomeHost",function(data){
         
-        //hostLookup[socket.id]=new Host(socket)
-        lookup[socket.id].emit("serverPrivate",socket.id)
+        if(hostLookup[socket.id]==null){
+            hostLookup[socket.id]=new Host(socket)
+            lookup[socket.id].emit("ServerToHost",hostLookup[socket.id].joinCode)
+        }
+        else{
+            if(!hostLookup[socket.id].isActive){
+                hostLookup[socket.id]=new Host(socket)
+                lookup[socket.id].emit("ServerToHost",hostLookup[socket.id].joinCode)
+            }
+            else{
+                lookup[socket.id].emit("ServerToHost","you are already hosting")
+            }
+            
+        }
         //hostLookup[socket.id].socket.emit("newHostPrivate",hostLookup[socket.id].joinCode)
         //console.log(hostLookup[socket.id].id)
     });
