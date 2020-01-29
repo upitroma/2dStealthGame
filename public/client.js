@@ -50,7 +50,6 @@ class player{
 
 
 
-
 //handle inputs-----------------------------
 var keys = [];
 window.onkeyup = function(e) { keys[e.keyCode] = false; }
