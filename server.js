@@ -14,7 +14,7 @@ app.use(express.static("public"))
 class Host{
     constructor(socket){
         this.socket=socket
-        this.id=socket.id
+        this.id=socket.id//ok, maybe a bit redundant
         this.joinCode=generateHostId()
         this.isActive=true
         this.sockets=[]

@@ -1,6 +1,6 @@
 //Make connection
 var socket = io.connect(window.location.href);//change to server's location
-var mySocketId = -1
+
 
 var uploadrate=.3
 
@@ -13,14 +13,27 @@ var canvas = document.getElementById('canvas'),
     startServerButton = document.getElementById("startServerButton"),
     joinCodeInput = document.getElementById("joinCodeInput");
 
-//server just relays data, PseudoServer manages the game 
-var isPseudoServer = false
+
+
+var mySocketId = -1         //default as -1 
+var isPseudoServer = false  //server just relays data, PseudoServer manages the game 
+var me                      //later defined as host or player
 
 //hide scrollbar
 //document.body.style.overflow = 'hidden';
 
 
 //define objects
+
+//only used by host
+class Host{
+    constructor(id,joinCode){
+        this.id=id
+        this.joinCode=joinCode
+        this.players=[]
+    }
+}
+
 class player{
     constructor(x,y,id){
         this.x=x;
@@ -128,7 +141,7 @@ window.onload = function(){
 }
 
 
-//networking---------------------------
+//networking out---------------------------
 
 
 //request to be host
@@ -149,9 +162,9 @@ function becomeHost(){
     console.log("requested to be host")
 }
 
+//networking in---------------------------
 
-
-socket.on("serverPrivate",function(data){
+socket.on("serverPrivate",function(data){//server connection
     if(mySocketId==-1){
         //add self to game
         mySocketId=data
@@ -160,7 +173,13 @@ socket.on("serverPrivate",function(data){
 });
 
 socket.on("ServerToHost",function(data){
-    console.log(data)
+    
+    if(!isPseudoServer){
+        isPseudoServer=true
+        console.log("server accepted request. now hosting with code "+data)
+        me=new Host(mySocketId,data)
+    }
+    pseudoServerInfo.innerHTML="PseudoServer is up on id: "+me.joinCode
 });
 
 /*
