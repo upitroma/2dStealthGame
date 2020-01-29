@@ -44,6 +44,7 @@ class player{
         this.id=id
         this.isActive=true
         this.isConnected=isConnected
+        this.joinCode
     }
 }
 
@@ -91,6 +92,8 @@ window.onload = function(){
             uploadtimer+=deltatime
             if(uploadtimer>uploadrate){
                 //TODO: send inputs to pseudoServer
+                
+                //use "clientToHost"
             }
         }
 
@@ -138,6 +141,7 @@ startServerButton.addEventListener("click", function(){
 joinServerButton.addEventListener("click",function(){
     joinHost(joinCodeInput.value)
     me=new player(-1,-1,true)
+    me.joinCode=joinCodeInput.value
 });
 
 //emmit events

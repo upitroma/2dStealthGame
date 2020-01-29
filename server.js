@@ -66,6 +66,20 @@ io.on("connection",function(socket){
         }
     });
 
+    socket.on("clientToHost",function(data){
+        if(clientLookup[data.joinCode]!=null){
+            clientLookup[data.joinCode].socket.emit("clientToHost",{
+                playerId: socket.id,
+                walkForward: data.walkForward,
+                walkBackward: data.walkBackward,
+                walkRight: data.walkRight,
+                walkLeft: data.walkLeft,
+                turnRight: data.turnRight,
+                turnLeft: data.turnLeft
+            })
+        }
+    });
+
     socket.on("BecomeHost",function(data){
         if(hostLookup[socket.id]==null){//new socket
             hostLookup[socket.id]=new Host(socket)
