@@ -37,12 +37,13 @@ class Host{
 }
 
 class player{
-    constructor(x,y,id){
-        this.x=x;
-        this.y=y;
-        this.angle;
-        this.id=id;
-        this.isActive=true;
+    constructor(x,y,id,isConnected){
+        this.x=x
+        this.y=y
+        this.angle
+        this.id=id
+        this.isActive=true
+        this.isConnected=isConnected
     }
 }
 
@@ -99,6 +100,7 @@ window.onload = function(){
             //TODO: modify player based on inputs
             //TODO: calculate what the player can see
             //TODO: send said data to the user (hostToSingleClient)
+
         }
 
 
@@ -135,6 +137,7 @@ startServerButton.addEventListener("click", function(){
 
 joinServerButton.addEventListener("click",function(){
     joinHost(joinCodeInput.value)
+    me=new player(-1,-1,true)
 });
 
 //emmit events
@@ -173,7 +176,7 @@ socket.on("ServerToHost",function(data){
         pseudoServerInfo.innerHTML="PseudoServer is up on id: "+me.joinCode
     }
     else{//new player
-        me.players.push(new player(0,0,data))
+        me.players.push(new player(50,50,data,true))//probably replace when player sends data
         socket.emit("hostToSingleClient",{
             targetId: data
         })
@@ -196,6 +199,9 @@ socket.on("serverPlayerDisconnect",function(data){
 */
 socket.on("hostToSingleClient",function(data){
     pseudoServerInfo.innerHTML="connected to PseudoServer"
+    if(!isPseudoServer){
+
+    }
 })
 
 socket.on("serverMessage",function(data){
