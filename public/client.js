@@ -75,9 +75,6 @@ var uploadtimer=0
 window.onload = function(){
     
     function update(deltatime){
-
-        
-        // ten times/second
         /*
         37 left
         39 right
@@ -87,41 +84,26 @@ window.onload = function(){
         69 e
         */
         canvas.width=canvas.width//refresh canvas
-
         drawBackground()
 
-
-        /*
-
-        //render visible players
-        visiblePlayers.forEach(function(p){
-
-            //move player
-            if(p.id==mySocketId){//if me
-
-                if(keys[65]){
-                    p.position-=playerMoveSpeed*deltatime
-                }
-                if(keys[68]){
-                    p.position+=playerMoveSpeed*deltatime
-                }
-
-                //send data
-                uploadtimer+=deltatime
-                if(uploadtimer>uploadrate){
-                    //updatePlayer(p)
-                }
-                
-
-                
+        if(!isPseudoServer){
+            uploadtimer+=deltatime
+            if(uploadtimer>uploadrate){
+                //TODO: send inputs to pseudoServer
             }
-            else if(p.isActive){//if other player
-                //render other players
-            }
-            
-        });
+        }
 
-        */
+        //server stuff
+        else{
+            //TODO: make a startGame() function once pseudoServer is up
+            //TODO: modify player based on inputs
+            //TODO: calculate what the player can see
+            //TODO: send said data to the user (hostToSingleClient)
+        }
+
+
+        //send data
+        
 
 
         context.stroke();
@@ -219,29 +201,4 @@ socket.on("hostToSingleClient",function(data){
 socket.on("serverMessage",function(data){
     serverInfo.innerHTML="[server]: "+data
     console.log(serverInfo.innerHTML="[server]: "+data)
-})
-
-socket.on("playerdata",function(data){
-    //update player in question and add unrecognised players
-
-    var isNew = true
-    //move the player
-    if(data.id!=mySocketId){
-        players.forEach(function(p){
-            if(p.id==data.id){
-                if(p.isActive){
-                    p.position=data.position
-                    p.colorId=data.colorId
-                    isNew=false
-                }
-                else{
-                    isNew=false
-                }
-            }
-        });
-
-        if(isNew){
-            players.push(new player(data.position,data.id))
-        }
-    }
 })

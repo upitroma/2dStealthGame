@@ -59,13 +59,6 @@ io.on("connection",function(socket){
     });
 
     //listen for data
-    socket.on("playerdata",function(data){
-        socket.broadcast.emit("playerdata",{
-            position: data.position,
-            colorId: data.colorId,
-            id: socket.id
-        })//needs to be scrubbed
-    });
 
     socket.on("hostToSingleClient",function(data){
         if(clientLookup[data.targetId]!=null){
@@ -93,7 +86,7 @@ io.on("connection",function(socket){
                 clientLookup[socket.id]=new client(socket,data)
 
                 //connect player to correct host
-                hostJoinCodeLookup[data].playerSockets.push(socket.id)
+                //hostJoinCodeLookup[data].playerSockets.push(socket.id)
                 hostJoinCodeLookup[data].socket.emit("ServerToHost",socket.id)
                 return
             }
