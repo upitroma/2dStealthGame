@@ -17,11 +17,12 @@ class Host{
         this.id=socket.id//ok, maybe a bit redundant
         this.joinCode=generateHostId()
         this.isActive=true
-        this.sockets=[]
+        this.playerSockets=[]
     }
 }
 
 var hostLookup=[]
+var hostJoinCodeLookup=[]
 
 //socket setup
 var io = socket(server)
@@ -59,23 +60,28 @@ io.on("connection",function(socket){
 
     socket.on("BecomeHost",function(data){
         
-        if(hostLookup[socket.id]==null){
+        if(hostLookup[socket.id]==null){//new socket
             hostLookup[socket.id]=new Host(socket)
             lookup[socket.id].emit("ServerToHost",hostLookup[socket.id].joinCode)
+            hostJoinCodeLookup[hostLookup[socket.id].joinCode]=hostLookup[socket.id]//easier to look up by joinId
         }
         else{
-            if(!hostLookup[socket.id].isActive){
-                hostLookup[socket.id]=new Host(socket)
-                lookup[socket.id].emit("ServerToHost",hostLookup[socket.id].joinCode)
-            }
-            else{
                 lookup[socket.id].emit("ServerToHost","you are already hosting")
-            }
-            
         }
-        //hostLookup[socket.id].socket.emit("newHostPrivate",hostLookup[socket.id].joinCode)
-        //console.log(hostLookup[socket.id].id)
     });
+
+    socket.on("joinHost",function(data){
+        if(hostJoinCodeLookup[data]!=null){
+            if(hostJoinCodeLookup[data].isActive){
+                lookup[socket.id].emit("serverMessage","host exists, yay!")
+
+                //TODO: connect player to correct host
+
+                return
+            }
+        }
+        lookup[socket.id].emit("serverMessage","invalid join code (or I messed up)")
+    })
 
     socket.on('disconnect', function(){
         console.info('user disconnected from socket: ' + socket.id+" Current active sockets: "+getTotalActiveSockets());

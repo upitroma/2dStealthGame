@@ -11,7 +11,8 @@ var canvas = document.getElementById('canvas'),
     serverInfo = document.getElementById("serverinfo"),
     pseudoServerInfo = document.getElementById("pseudoServerInfo"),
     startServerButton = document.getElementById("startServerButton"),
-    joinCodeInput = document.getElementById("joinCodeInput");
+    joinCodeInput = document.getElementById("joinCodeInput"),
+    joinServerButton = document.getElementById("joinServerButton");
 
 
 
@@ -149,6 +150,10 @@ startServerButton.addEventListener("click", function(){
     becomeHost()
 }); 
 
+joinServerButton.addEventListener("click",function(){
+    joinHost(joinCodeInput.value)
+});
+
 //emmit events
 function updatePlayer(p){
     socket.emit("playerdata",{
@@ -160,6 +165,11 @@ function updatePlayer(p){
 function becomeHost(){
     socket.emit("BecomeHost","plz work");
     console.log("requested to be host")
+}
+
+function joinHost(joinCode){
+    socket.emit("joinHost",joinCode)
+    console.log("attempting to join "+joinCode)
 }
 
 //networking in---------------------------
@@ -199,6 +209,7 @@ socket.on("serverPlayerDisconnect",function(data){
 
 socket.on("serverMessage",function(data){
     serverInfo.innerHTML="[server]: "+data
+    console.log(serverInfo.innerHTML="[server]: "+data)
 })
 
 socket.on("playerdata",function(data){
