@@ -17,6 +17,7 @@ var canvas = document.getElementById('canvas'),
 
 
 var mySocketId = -1         //default as -1 
+var myJoinCode              //for players connecting to psudoServer
 var isPseudoServer = false  //server just relays data, PseudoServer manages the game 
 var me                      //later defined as host or player
 
@@ -176,7 +177,6 @@ function joinHost(joinCode){
 
 socket.on("serverPrivate",function(data){//server connection
     if(mySocketId==-1){
-        //add self to game
         mySocketId=data
         pseudoServerInfo.innerHTML="connected to server, but not host"
     }
@@ -184,12 +184,19 @@ socket.on("serverPrivate",function(data){//server connection
 
 socket.on("ServerToHost",function(data){
     
-    if(!isPseudoServer){
+    if(!isPseudoServer){//initilize server
         isPseudoServer=true
         console.log("server accepted request. now hosting with code "+data)
         me=new Host(mySocketId,data)
+        pseudoServerInfo.innerHTML="PseudoServer is up on id: "+me.joinCode
     }
-    pseudoServerInfo.innerHTML="PseudoServer is up on id: "+me.joinCode
+    else{//new player
+        me.players.push(new player(0,0,data))
+        socket.emit("hostToSingleClient",{
+            targetId: data
+        })
+        console.log("new player on socket "+data)
+    }
 });
 
 /*
@@ -205,7 +212,9 @@ socket.on("serverPlayerDisconnect",function(data){
 })
 
 */
-
+socket.on("hostToSingleClient",function(data){
+    pseudoServerInfo.innerHTML="connected to PseudoServer"
+})
 
 socket.on("serverMessage",function(data){
     serverInfo.innerHTML="[server]: "+data

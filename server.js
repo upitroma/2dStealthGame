@@ -20,9 +20,18 @@ class Host{
         this.playerSockets=[]
     }
 }
+class client{
+    constructor(socket){
+        this.socket=socket
+        this.joinCode=-1
+    }
+}
+
 
 var hostLookup=[]
 var hostJoinCodeLookup=[]
+
+var clientLookup=[]
 
 //socket setup
 var io = socket(server)
@@ -58,29 +67,38 @@ io.on("connection",function(socket){
         })//needs to be scrubbed
     });
 
+    socket.on("hostToSingleClient",function(data){
+        if(clientLookup[data.targetId]!=null){
+            clientLookup[data.targetId].socket.emit("hostToSingleClient",data)
+        }
+    });
+
     socket.on("BecomeHost",function(data){
-        
         if(hostLookup[socket.id]==null){//new socket
             hostLookup[socket.id]=new Host(socket)
             lookup[socket.id].emit("ServerToHost",hostLookup[socket.id].joinCode)
             hostJoinCodeLookup[hostLookup[socket.id].joinCode]=hostLookup[socket.id]//easier to look up by joinId
         }
         else{
-                lookup[socket.id].emit("ServerToHost","you are already hosting")
+            lookup[socket.id].emit("ServerToHost","you are already hosting")
         }
     });
 
     socket.on("joinHost",function(data){
         if(hostJoinCodeLookup[data]!=null){
             if(hostJoinCodeLookup[data].isActive){
-                lookup[socket.id].emit("serverMessage","host exists, yay!")
+                lookup[socket.id].emit("serverMessage","Found host on "+data)
 
-                //TODO: connect player to correct host
+                //keep track of player
+                clientLookup[socket.id]=new client(socket,data)
 
+                //connect player to correct host
+                hostJoinCodeLookup[data].playerSockets.push(socket.id)
+                hostJoinCodeLookup[data].socket.emit("ServerToHost",socket.id)
                 return
             }
         }
-        lookup[socket.id].emit("serverMessage","invalid join code (or I messed up)")
+        lookup[socket.id].emit("serverMessage","invalid join code")
     })
 
     socket.on('disconnect', function(){
