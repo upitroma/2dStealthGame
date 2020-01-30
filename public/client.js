@@ -45,7 +45,14 @@ class player{
         this.isActive=true
         this.isConnected=isConnected
         this.joinCode=-1
-        this.inputs=[]
+        this.inputs={
+            walkForward: false,
+            walkBackward: false,
+            walkRight: false,
+            walkLeft: false,
+            turnRight: false,
+            turnLeft: false
+        }
     }
 }
 var me=new player(-1,-1,-1,false)//overwritten when connected to server
@@ -101,10 +108,10 @@ window.onload = function(){
         }
 
         //server stuff
-        else{
+        else if(isPseudoServer){
             if(me.players.length>0){
                 me.players.forEach(function(p){
-                    console.log(p)
+                    console.log(p.inputs)
                 })
             }
             
@@ -183,7 +190,7 @@ function sendInputsToHost(walkForward,walkBackward,walkRight,walkLeft,turnRight,
         turnLeft: turnLeft
     })
 
-    console.log("[ ",walkForward,walkBackward,walkRight,walkLeft,turnRight,turnLeft," ] sent to "+me.joinCode)
+    //console.log("[ ",walkForward,walkBackward,walkRight,walkLeft,turnRight,turnLeft," ] sent to "+me.joinCode)
 
 }
 
@@ -200,7 +207,15 @@ socket.on("clientToHost",function(data){
     if(isPseudoServer){
         // record player's inputs
         //new player is added in serverToHost
-        me.players[data.playerId].inputs=[data.walkForward,data.walkBackward,data.walkLeft,data.turnRight,data.turnLeft]
+        //me.players[data.playerId].inputs=[data.walkForward,data.walkBackward,data.walkLeft,data.turnRight,data.turnLeft]
+        me.players[data.playerId].inputs={
+            walkForward: data.walkForward,
+            walkBackward: data.walkBackward,
+            walkRight: data.walkRight,
+            walkLeft: data.walkLeft,
+            turnRight: data.turnRight,
+            turnLeft: data.turnLeft
+        }
     }
 
 })
@@ -243,6 +258,9 @@ socket.on("hostToSingleClient",function(data){// should probably authenticate si
             me.isConnected=true
             me.joinCode=joinCodeInput.value
             console.log(me)
+        }
+        else{
+
         }
     }
 })
