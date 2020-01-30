@@ -44,7 +44,8 @@ class player{
         this.id=id
         this.isActive=true
         this.isConnected=isConnected
-        this.joinCode
+        this.joinCode=-1
+        this.inputs=[]
     }
 }
 var me=new player(-1,-1,-1,false)
@@ -188,6 +189,15 @@ socket.on("serverPrivate",function(data){//server connection
     }
 });
 
+socket.on("clientToHost",function(data){
+    if(isPseudoServer){
+        // record player's inputs
+        me.players[data.playerId].inputs=[data.walkForward,data.walkBackward,data.walkLeft,data.turnRight,data.turnLeft]
+        console.log(me.players[data.playerId].inputs)
+    }
+
+})
+
 socket.on("ServerToHost",function(data){
     
     if(!isPseudoServer){//initilize server
@@ -197,7 +207,7 @@ socket.on("ServerToHost",function(data){
         pseudoServerInfo.innerHTML="PseudoServer is up on id: "+me.joinCode
     }
     else{//new player
-        me.players.push(new player(50,50,data,true))//probably replace when player sends data
+        me.players[data]=(new player(50,50,data,true))//probably replace when player sends data
         socket.emit("hostToSingleClient",{
             targetId: data
         })
@@ -205,11 +215,6 @@ socket.on("ServerToHost",function(data){
     }
 });
 
-socket.on("clientToHost",function(data){
-    if(isPseudoServer){
-        console.log(data)
-    }
-})
 
 /*
 socket.on("serverPlayerDisconnect",function(data){
