@@ -21,9 +21,10 @@ class Host{
     }
 }
 class client{
-    constructor(socket){
+    constructor(socket,hostSocket){
         this.socket=socket
         this.joinCode=-1
+        this.hostSocket=hostSocket
     }
 }
 
@@ -67,8 +68,8 @@ io.on("connection",function(socket){
     });
 
     socket.on("clientToHost",function(data){
-        if(clientLookup[data.joinCode]!=null){
-            clientLookup[data.joinCode].socket.emit("clientToHost",{
+        if(hostJoinCodeLookup[data.joinCode]!=null){
+            hostJoinCodeLookup[data.joinCode].socket.emit("clientToHost",{
                 playerId: socket.id,
                 walkForward: data.walkForward,
                 walkBackward: data.walkBackward,

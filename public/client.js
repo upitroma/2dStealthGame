@@ -2,7 +2,7 @@
 var socket = io.connect(window.location.href);//change to server's location
 
 
-var uploadrate=.3
+var uploadrate=.5//slow for testing
 
 
 //get html assets
@@ -19,7 +19,7 @@ var canvas = document.getElementById('canvas'),
 var mySocketId = -1         //default as -1 
 var myJoinCode              //for players connecting to psudoServer
 var isPseudoServer = false  //server just relays data, PseudoServer manages the game 
-var me                      //later defined as host or player
+                      //later defined as host or player
 
 //hide scrollbar
 //document.body.style.overflow = 'hidden';
@@ -47,7 +47,7 @@ class player{
         this.joinCode
     }
 }
-
+var me=new player(-1,-1,-1,false)
 
 
 //handle inputs-----------------------------
@@ -88,12 +88,14 @@ window.onload = function(){
         canvas.width=canvas.width//refresh canvas
         drawBackground()
 
-        if(!isPseudoServer){
+        if(!isPseudoServer && me.isConnected){
             uploadtimer+=deltatime
             if(uploadtimer>uploadrate){
                 //TODO: send inputs to pseudoServer
                 
-                //use "clientToHost"
+                sendInputsToHost(true,false,false,false,false,false)
+                
+
             }
         }
 
@@ -140,7 +142,7 @@ startServerButton.addEventListener("click", function(){
 
 joinServerButton.addEventListener("click",function(){
     joinHost(joinCodeInput.value)
-    me=new player(-1,-1,true)
+    me=new player(-1,-1,-1,false)
     me.joinCode=joinCodeInput.value
 });
 
@@ -160,6 +162,21 @@ function becomeHost(){
 function joinHost(joinCode){
     socket.emit("joinHost",joinCode)
     console.log("attempting to join "+joinCode)
+}
+
+function sendInputsToHost(walkForward,walkBackward,walkRight,walkLeft,turnRight,turnLeft){
+    socket.emit("clientToHost",{
+        joinCode: me.joinCode,
+        walkForward: walkForward,
+        walkBackward: walkBackward,
+        walkRight: walkRight,
+        walkLeft: walkLeft,
+        turnRight: turnRight,
+        turnLeft: turnLeft
+    })
+
+    console.log("[ ",walkForward,walkBackward,walkRight,walkLeft,turnRight,turnLeft," ] sent to "+me.joinCode)
+
 }
 
 //networking in---------------------------
@@ -188,6 +205,12 @@ socket.on("ServerToHost",function(data){
     }
 });
 
+socket.on("clientToHost",function(data){
+    if(isPseudoServer){
+        console.log(data)
+    }
+})
+
 /*
 socket.on("serverPlayerDisconnect",function(data){
 
@@ -204,7 +227,11 @@ socket.on("serverPlayerDisconnect",function(data){
 socket.on("hostToSingleClient",function(data){
     pseudoServerInfo.innerHTML="connected to PseudoServer"
     if(!isPseudoServer){
-
+        if(!me.isConnected){
+            me.isConnected=true
+            me.joinCode=joinCodeInput.value
+            console.log(me)
+        }
     }
 })
 
