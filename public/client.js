@@ -48,7 +48,7 @@ class player{
         this.inputs=[]
     }
 }
-var me=new player(-1,-1,-1,false)
+var me=new player(-1,-1,-1,false)//overwritten when connected to server
 
 
 //handle inputs-----------------------------
@@ -102,10 +102,17 @@ window.onload = function(){
 
         //server stuff
         else{
+            if(me.players.length>0){
+                me.players.forEach(function(p){
+                    console.log(p)
+                })
+            }
+            
+
             //TODO: make a startGame() function once pseudoServer is up
             //TODO: modify player based on inputs
             //TODO: calculate what the player can see
-            //TODO: send said data to the user (hostToSingleClient)
+            //TODO: send said data to the user (probably using hostToSingleClient)
 
         }
 
@@ -192,8 +199,8 @@ socket.on("serverPrivate",function(data){//server connection
 socket.on("clientToHost",function(data){
     if(isPseudoServer){
         // record player's inputs
+        //new player is added in serverToHost
         me.players[data.playerId].inputs=[data.walkForward,data.walkBackward,data.walkLeft,data.turnRight,data.turnLeft]
-        console.log(me.players[data.playerId].inputs)
     }
 
 })
@@ -207,7 +214,7 @@ socket.on("ServerToHost",function(data){
         pseudoServerInfo.innerHTML="PseudoServer is up on id: "+me.joinCode
     }
     else{//new player
-        me.players[data]=(new player(50,50,data,true))//probably replace when player sends data
+        me.players[data]=(new player(50,50,data,true))
         socket.emit("hostToSingleClient",{
             targetId: data
         })
@@ -229,7 +236,7 @@ socket.on("serverPlayerDisconnect",function(data){
 })
 
 */
-socket.on("hostToSingleClient",function(data){
+socket.on("hostToSingleClient",function(data){// should probably authenticate since no data is sent
     pseudoServerInfo.innerHTML="connected to PseudoServer"
     if(!isPseudoServer){
         if(!me.isConnected){
