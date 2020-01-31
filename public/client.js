@@ -62,8 +62,7 @@ var me=new player(-1,-1,-1,false)//overwritten when connected to server
 var keys = [];
 window.onkeyup = function(e) { keys[e.keyCode] = false; }
 window.onkeydown = function(e) { keys[e.keyCode] = true; } 
-
-var pastKeys = []
+keys[87]=keys[83]=keys[68]=keys[65]=keys[76]=keys[75]=false
 
 //canvas setup----------------------------
 canvas.width = window.innerWidth;
@@ -73,7 +72,7 @@ canvas.height = window.innerHeight;
 function drawBackground(){
     context.fillStyle = "black"
     if(isPseudoServer)
-        context.fillStyle = "red"
+        context.fillStyle = "rgb(19, 19, 32)"
     context.fillRect(0, 0, canvas.width, canvas.height)
 }
 
@@ -88,8 +87,14 @@ window.onload = function(){
         /*
         37 left
         39 right
+        87 w
         65 a
+        83 s
         68 d
+
+        75 k
+        76 l
+
         81 q
         69 e
         */
@@ -100,8 +105,11 @@ window.onload = function(){
             uploadtimer+=deltatime
             if(uploadtimer>uploadrate){
                 //TODO: send inputs to pseudoServer
-                
-                sendInputsToHost(true,false,false,false,false,false)
+
+
+
+                sendInputsToHost(keys[87],keys[83],keys[68],keys[65],keys[76],keys[75])
+                console.log(keys[87],keys[83],keys[68],keys[65],keys[76],keys[75])
                 
 
             }
@@ -111,10 +119,13 @@ window.onload = function(){
         else if(isPseudoServer){
             if(me.players.length>0){
                 me.players.forEach(function(p){
-                    if(p.inputs.walkForward){
-                        p.y+=100*deltatime
-                        //TODO: math time!
-                    }
+                    //y is inverted
+                    p.y-=p.inputs.walkForward*100*deltatime
+                    p.y+=p.inputs.walkBackward*100*deltatime
+                    p.x+=p.inputs.walkRight*100*deltatime
+                    p.x-=p.inputs.walkLeft*100*deltatime
+
+                    console.log(p.inputs.walkForward)
                     
 
 
