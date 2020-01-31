@@ -3,6 +3,7 @@ var socket = io.connect(window.location.href);//change to server's location
 
 
 var uploadrate=.5//slow for testing
+var playerViewDist=100
 
 
 //get html assets
@@ -36,7 +37,7 @@ class Host{
     }
 }
 
-class player{
+class Player{
     constructor(x,y,id,isConnected){
         this.x=x
         this.y=y
@@ -53,10 +54,20 @@ class player{
             turnRight: false,
             turnLeft: false
         }
+        this.visibleWalls=[]
+        this.visiblePlayers=[]
     }
 }
-var me=new player(-1,-1,-1,false)//overwritten when connected to server
+var me=new Player(-1,-1,-1,false)//overwritten when connected to server
 
+class Wall{
+    constructor(x1,x2,y1,y2){
+        this.x1=x1
+        this.x2=x2
+        this.y1=y1
+        this.y2=y2
+    }
+}
 
 //handle inputs-----------------------------
 var keys = [];
@@ -115,7 +126,7 @@ window.onload = function(){
             }
         }
 
-        //server stuff
+        //pseudoServer stuff
         else if(isPseudoServer){
             if(me.players.length>0){
                 me.players.forEach(function(p){
@@ -124,17 +135,36 @@ window.onload = function(){
                     p.y+=p.inputs.walkBackward*100*deltatime
                     p.x+=p.inputs.walkRight*100*deltatime
                     p.x-=p.inputs.walkLeft*100*deltatime
+                    //TODO: angle stuff
 
-                    console.log(p.inputs.walkForward)
-                    
+                    //calculate what player can see
+                    me.players.forEach(function(vp){
+                        if(vp!=p){//oviously, you can see yourself
+                            if(Math.abs(vp.x-p.x)<playerViewDist){
+                                if(Math.abs(vp.y-p.y)<playerViewDist){
+                                    
+                                    //TODO: factor in fov angle
+                                    //calculate circular range instaid of square
+                                    //calculate angle to vp
+                                    //only render vp if within p's sight
+
+                                    //TODO: render vp on p's screen
+                                    console.log("player "+p.id+" can see "+vp.id)
+                                }
+                            }
+                        }
+                    })
 
 
-
-
-                    //debugging graphics
+                    //debugging graphics-----------------
                     context.fillStyle = 'blue';
+                    context.moveTo(p.x+10,p.y)
                     context.arc(p.x, p.y, 10, 0, 2 * Math.PI);// x,y, r, start angle, end angle
                     context.fill();
+
+                    //debugging fov
+                    context.strokeStyle = 'red';
+                    context.strokeRect(p.x-playerViewDist,p.y-playerViewDist,playerViewDist*2,playerViewDist*2)
                 })
             }
             
@@ -180,7 +210,7 @@ startServerButton.addEventListener("click", function(){
 
 joinServerButton.addEventListener("click",function(){
     joinHost(joinCodeInput.value)
-    me=new player(-1,-1,-1,false)
+    me=new Player(-1,-1,-1,false)
     me.joinCode=joinCodeInput.value
 });
 
@@ -252,7 +282,7 @@ socket.on("ServerToHost",function(data){
         pseudoServerInfo.innerHTML="PseudoServer is up on id: "+me.joinCode
     }
     else{//new player
-        me.players[data]=(new player(50,50,data,true))
+        me.players[data]=(new Player(50,50,data,true))
         socket.emit("hostToSingleClient",{
             targetId: data
         })
