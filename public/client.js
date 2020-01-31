@@ -40,7 +40,7 @@ class player{
     constructor(x,y,id,isConnected){
         this.x=x
         this.y=y
-        this.angle
+        this.angle=90
         this.id=id
         this.isActive=true
         this.isConnected=isConnected
@@ -111,7 +111,19 @@ window.onload = function(){
         else if(isPseudoServer){
             if(me.players.length>0){
                 me.players.forEach(function(p){
-                    console.log(p.inputs)
+                    if(p.inputs.walkForward){
+                        p.y+=100*deltatime
+                        //TODO: math time!
+                    }
+                    
+
+
+
+
+                    //debugging graphics
+                    context.fillStyle = 'blue';
+                    context.arc(p.x, p.y, 10, 0, 2 * Math.PI);// x,y, r, start angle, end angle
+                    context.fill();
                 })
             }
             
