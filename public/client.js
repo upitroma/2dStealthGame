@@ -115,14 +115,8 @@ window.onload = function(){
         if(!isPseudoServer && me.isConnected){
             uploadtimer+=deltatime
             if(uploadtimer>uploadrate){
-                //TODO: send inputs to pseudoServer
-
-
-
+                // send inputs to pseudoServer
                 sendInputsToHost(keys[87],keys[83],keys[68],keys[65],keys[76],keys[75])
-                console.log(keys[87],keys[83],keys[68],keys[65],keys[76],keys[75])
-                
-
             }
         }
 
@@ -150,6 +144,12 @@ window.onload = function(){
 
                                     //TODO: render vp on p's screen
                                     console.log("player "+p.id+" can see "+vp.id)
+
+                                    socket.emit("hostToSingleClient",{
+                                        targetId: p.id,
+                                        testArray: [1,2,3,"string"]
+                                    })
+
                                 }
                             }
                         }
@@ -313,7 +313,7 @@ socket.on("hostToSingleClient",function(data){// should probably authenticate si
             console.log(me)
         }
         else{
-
+            console.log(data.testArray)
         }
     }
 })
