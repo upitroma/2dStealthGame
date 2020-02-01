@@ -132,6 +132,10 @@ window.onload = function(){
                     //TODO: angle stuff
 
                     //calculate what player can see
+
+                    var tempVpsx=[]
+                    var tempVpsy=[]
+                    var tempWalls=[]
                     me.players.forEach(function(vp){
                         if(vp!=p){//oviously, you can see yourself
                             if(Math.abs(vp.x-p.x)<playerViewDist){
@@ -142,13 +146,12 @@ window.onload = function(){
                                     //calculate angle to vp
                                     //only render vp if within p's sight
 
-                                    //TODO: render vp on p's screen
+                                    
                                     console.log("player "+p.id+" can see "+vp.id)
 
-                                    socket.emit("hostToSingleClient",{
-                                        targetId: p.id,
-                                        testArray: [1,2,3,"string"]
-                                    })
+                                    //relative coordinates
+                                    tempVpsx.push(vp.x-p.x)
+                                    tempVpsy.push(p.y-vp.y)
 
                                 }
                             }
@@ -156,24 +159,30 @@ window.onload = function(){
                     })
 
 
-                    //debugging graphics-----------------
+                    //debugging server graphics-----------------
                     context.fillStyle = 'blue';
                     context.moveTo(p.x+10,p.y)
                     context.arc(p.x, p.y, 10, 0, 2 * Math.PI);// x,y, r, start angle, end angle
                     context.fill();
-
                     //debugging fov
                     context.strokeStyle = 'red';
                     context.strokeRect(p.x-playerViewDist,p.y-playerViewDist,playerViewDist*2,playerViewDist*2)
+
+
+                    //TODO: make a startGame() function once pseudoServer is up
+                    //TODO: modify player based on inputs
+                    //TODO: calculate what the player can see
+                    //TODO: send said data to the user (probably using hostToSingleClient)
+
+                    //send data to player
+                    socket.emit("hostToSingleClient",{
+                        targetId: p.id,
+                        visiblePlayersX: tempVpsx,
+                        visiblePlayersY: tempVpsy
+                    })
+
                 })
             }
-            
-
-            //TODO: make a startGame() function once pseudoServer is up
-            //TODO: modify player based on inputs
-            //TODO: calculate what the player can see
-            //TODO: send said data to the user (probably using hostToSingleClient)
-
         }
 
 
@@ -313,7 +322,11 @@ socket.on("hostToSingleClient",function(data){// should probably authenticate si
             console.log(me)
         }
         else{
-            console.log(data.testArray)
+            //console.log("I see "+data.visiblePlayers.length)
+            for(var i=0;i<data.visiblePlayersX.length;i++){
+                console.log("px="+data.visiblePlayersX[i]+" py="+data.visiblePlayersY[i])
+            }
+            //TODO: render vp on p's screen
         }
     }
 })
