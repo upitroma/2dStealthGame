@@ -322,7 +322,7 @@ socket.on("hostToSingleClient",function(data){// should probably authenticate si
             console.log(me)
         }
         else{
-            //console.log("I see "+data.visiblePlayers.length)
+            //console.log("I see "+data.visiblePlayers.length+" players")
             for(var i=0;i<data.visiblePlayersX.length;i++){
                 console.log("px="+data.visiblePlayersX[i]+" py="+data.visiblePlayersY[i])
             }
