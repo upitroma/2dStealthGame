@@ -4,7 +4,9 @@ var socket = io.connect(window.location.href);//change to server's location
 
 var uploadrate=.5//slow for testing
 var playerViewDist=200 //100
+var playerViewAngle=0.785398//45 degrees
 var playerSpeedNormal=50
+var playerTurnSpee=20
 
 
 //get html assets
@@ -119,18 +121,29 @@ window.onload = function(){
                 // send inputs to pseudoServer
                 sendInputsToHost(keys[87],keys[83],keys[68],keys[65],keys[76],keys[75])
             }
-
-
             
 
             //render self
+            /*
             context.fillStyle = 'blue'
             context.strokeStyle="blue"
             context.moveTo(me.x+25,me.y)
             context.arc(me.x, me.y, 25, 0, 2 * Math.PI);
             context.fill();
-
+            context.stroke();
+            */
+            
             //TODO: fix red outline around blue player
+            
+
+            //render light
+            context.fillStyle = 'white'
+            context.strokeStyle="white"
+            context.moveTo(me.x+0,me.y)
+            context.arc(me.x, me.y, playerViewDist , me.angle-(playerViewAngle/2), me.angle+(playerViewAngle/2));
+            context.fill();
+            context.stroke();
+
 
             //render others
             context.fillStyle = 'red'
@@ -140,6 +153,7 @@ window.onload = function(){
                 context.moveTo((vp.x*mul)+25+me.x,(-vp.y*mul)+me.y)
                 context.arc((vp.x*mul)+me.x, (-vp.y*mul)+me.y, 25, 0, 2 * Math.PI);
             })
+            context.stroke();
 
         }
 
@@ -353,12 +367,12 @@ socket.on("hostToSingleClient",function(data){// should probably authenticate si
         }
         else{
             me.visiblePlayers=[]
-            
+
             for(var i=0;i<data.visiblePlayersX.length;i++){
-                console.log("px="+data.visiblePlayersX[i]+" py="+data.visiblePlayersY[i])
+                //console.log("px="+data.visiblePlayersX[i]+" py="+data.visiblePlayersY[i])
+                console.log(Math.atan2(data.visiblePlayersX[i],data.visiblePlayersY[i])*180/Math.PI)//0 degrees is north
                 me.visiblePlayers.push(new Player(data.visiblePlayersX[i],data.visiblePlayersY[i],-1,true))//relative coords
             }
-            //TODO: render vp on p's screen
         }
     }
 })
