@@ -118,6 +118,28 @@ window.onload = function(){
                 // send inputs to pseudoServer
                 sendInputsToHost(keys[87],keys[83],keys[68],keys[65],keys[76],keys[75])
             }
+
+
+            
+
+            //render self
+            context.fillStyle = 'blue'
+            context.strokeStyle="blue"
+            context.moveTo(me.x+50,me.y)
+            context.arc(me.x, me.y, 50, 0, 2 * Math.PI);
+            context.fill();
+
+            //TODO: fix red outline around blue player
+
+            //render others
+            context.fillStyle = 'red'
+            context.strokeStyle="red"
+            var mul=5
+            me.visiblePlayers.forEach(function(vp){
+                context.moveTo((vp.x*mul)+50+me.x,(-vp.y*mul)+me.y)
+                context.arc((vp.x*mul)+me.x, (-vp.y*mul)+me.y, 50, 0, 2 * Math.PI);
+            })
+
         }
 
         //pseudoServer stuff
@@ -317,14 +339,18 @@ socket.on("hostToSingleClient",function(data){// should probably authenticate si
     pseudoServerInfo.innerHTML="connected to PseudoServer"
     if(!isPseudoServer){
         if(!me.isConnected){
+            me.x=canvas.width/2
+            me.y=canvas.height/2
             me.isConnected=true
             me.joinCode=joinCodeInput.value
             console.log(me)
         }
         else{
-            //console.log("I see "+data.visiblePlayers.length+" players")
+            me.visiblePlayers=[]
+            
             for(var i=0;i<data.visiblePlayersX.length;i++){
                 console.log("px="+data.visiblePlayersX[i]+" py="+data.visiblePlayersY[i])
+                me.visiblePlayers.push(new Player(data.visiblePlayersX[i],data.visiblePlayersY[i],-1,true))//relative coords
             }
             //TODO: render vp on p's screen
         }
