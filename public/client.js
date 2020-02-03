@@ -155,17 +155,22 @@ window.onload = function(){
                     //TODO: angle stuff
 
                     //calculate what player can see
-
                     var tempVpsx=[]
                     var tempVpsy=[]
                     var tempWalls=[]
                     me.players.forEach(function(vp){
-                        if(vp!=p){//oviously, you can see yourself
+                        if(vp!=p){//oviously you can see yourself
                             if(Math.abs(vp.x-p.x)<playerViewDist){
                                 if(Math.abs(vp.y-p.y)<playerViewDist){
                                     
                                     //TODO: factor in fov angle
+
                                     //calculate circular range instaid of square
+
+                                    //relativeAngle = Math.atan2(deltax,deltay)*(180/Math.PI)
+                                    //isInsideCircle = ((x - center_x)^2 + (y - center_y)^2 < radius^2)
+
+
                                     //calculate angle to vp
                                     //only render vp if within p's sight
 
