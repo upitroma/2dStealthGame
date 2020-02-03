@@ -3,7 +3,8 @@ var socket = io.connect(window.location.href);//change to server's location
 
 
 var uploadrate=.5//slow for testing
-var playerViewDist=100
+var playerViewDist=200 //100
+var playerSpeedNormal=50
 
 
 //get html assets
@@ -125,8 +126,8 @@ window.onload = function(){
             //render self
             context.fillStyle = 'blue'
             context.strokeStyle="blue"
-            context.moveTo(me.x+50,me.y)
-            context.arc(me.x, me.y, 50, 0, 2 * Math.PI);
+            context.moveTo(me.x+25,me.y)
+            context.arc(me.x, me.y, 25, 0, 2 * Math.PI);
             context.fill();
 
             //TODO: fix red outline around blue player
@@ -134,10 +135,10 @@ window.onload = function(){
             //render others
             context.fillStyle = 'red'
             context.strokeStyle="red"
-            var mul=5
+            var mul=2
             me.visiblePlayers.forEach(function(vp){
-                context.moveTo((vp.x*mul)+50+me.x,(-vp.y*mul)+me.y)
-                context.arc((vp.x*mul)+me.x, (-vp.y*mul)+me.y, 50, 0, 2 * Math.PI);
+                context.moveTo((vp.x*mul)+25+me.x,(-vp.y*mul)+me.y)
+                context.arc((vp.x*mul)+me.x, (-vp.y*mul)+me.y, 25, 0, 2 * Math.PI);
             })
 
         }
@@ -147,10 +148,10 @@ window.onload = function(){
             if(me.players.length>0){
                 me.players.forEach(function(p){
                     //y is inverted
-                    p.y-=p.inputs.walkForward*100*deltatime
-                    p.y+=p.inputs.walkBackward*100*deltatime
-                    p.x+=p.inputs.walkRight*100*deltatime
-                    p.x-=p.inputs.walkLeft*100*deltatime
+                    p.y-=p.inputs.walkForward*playerSpeedNormal*deltatime
+                    p.y+=p.inputs.walkBackward*playerSpeedNormal*deltatime
+                    p.x+=p.inputs.walkRight*playerSpeedNormal*deltatime
+                    p.x-=p.inputs.walkLeft*playerSpeedNormal*deltatime
                     //TODO: angle stuff
 
                     //calculate what player can see
