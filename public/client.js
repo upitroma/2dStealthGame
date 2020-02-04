@@ -6,7 +6,7 @@ var uploadrate=.5//slow for testing
 var playerViewDist=200 //100
 var playerViewAngle=0.785398//45 degrees
 var playerSpeedNormal=50
-var playerTurnSpee=20
+var playerTurnSpeed=1
 
 
 //get html assets
@@ -121,13 +121,15 @@ window.onload = function(){
                 // send inputs to pseudoServer
                 sendInputsToHost(keys[87],keys[83],keys[68],keys[65],keys[76],keys[75])
             }
+
+            var mul=2
             
             //render light
             context.beginPath();
             context.fillStyle = 'white'
             context.strokeStyle="white"
             context.moveTo(me.x+0,me.y)
-            context.arc(me.x, me.y, playerViewDist , me.angle-(playerViewAngle/2), me.angle+(playerViewAngle/2));
+            context.arc(me.x, me.y, playerViewDist*mul , me.angle-(playerViewAngle/2), me.angle+(playerViewAngle/2));
             context.fill();
             context.stroke();
 
@@ -146,7 +148,7 @@ window.onload = function(){
             context.beginPath();
             context.fillStyle = 'red'
             context.strokeStyle="red"
-            var mul=2
+            
             me.visiblePlayers.forEach(function(vp){
                 context.moveTo((vp.x*mul)+25+me.x,(-vp.y*mul)+me.y)
                 context.arc((vp.x*mul)+me.x, (-vp.y*mul)+me.y, 25, 0, 2 * Math.PI);
@@ -164,7 +166,9 @@ window.onload = function(){
                     p.y+=p.inputs.walkBackward*playerSpeedNormal*deltatime
                     p.x+=p.inputs.walkRight*playerSpeedNormal*deltatime
                     p.x-=p.inputs.walkLeft*playerSpeedNormal*deltatime
-                    //TODO: angle stuff
+                    //angle stuff
+                    p.angle+=p.inputs.turnRight*playerTurnSpeed*deltatime
+                    p.angle-=p.inputs.turnLeft*playerTurnSpeed*deltatime
 
                     //calculate what player can see
                     var tempVpsx=[]
@@ -217,6 +221,7 @@ window.onload = function(){
                     //send data to player
                     socket.emit("hostToSingleClient",{
                         targetId: p.id,
+                        angle: p.angle,
                         visiblePlayersX: tempVpsx,
                         visiblePlayersY: tempVpsy
                     })
@@ -367,10 +372,10 @@ socket.on("hostToSingleClient",function(data){// should probably authenticate si
             me.visiblePlayers=[]
 
             for(var i=0;i<data.visiblePlayersX.length;i++){
-                //console.log("px="+data.visiblePlayersX[i]+" py="+data.visiblePlayersY[i])
-                console.log(Math.atan2(data.visiblePlayersX[i],data.visiblePlayersY[i])*180/Math.PI)//0 degrees is north
+                //console.log(Math.atan2(data.visiblePlayersX[i],data.visiblePlayersY[i])*180/Math.PI)//0 degrees is north
                 me.visiblePlayers.push(new Player(data.visiblePlayersX[i],data.visiblePlayersY[i],-1,true))//relative coords
             }
+            me.angle=data.angle
         }
     }
 })
