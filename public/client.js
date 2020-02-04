@@ -122,21 +122,8 @@ window.onload = function(){
                 sendInputsToHost(keys[87],keys[83],keys[68],keys[65],keys[76],keys[75])
             }
             
-
-            //render self
-            /*
-            context.fillStyle = 'blue'
-            context.strokeStyle="blue"
-            context.moveTo(me.x+25,me.y)
-            context.arc(me.x, me.y, 25, 0, 2 * Math.PI);
-            context.fill();
-            context.stroke();
-            */
-            
-            //TODO: fix red outline around blue player
-            
-
             //render light
+            context.beginPath();
             context.fillStyle = 'white'
             context.strokeStyle="white"
             context.moveTo(me.x+0,me.y)
@@ -144,8 +131,19 @@ window.onload = function(){
             context.fill();
             context.stroke();
 
+            //render self
+            context.beginPath();
+            context.fillStyle = 'blue'
+            context.strokeStyle="blue"
+            context.moveTo(me.x+25,me.y)
+            context.arc(me.x, me.y, 25, 0, 2 * Math.PI);
+            context.closePath();
+            context.fill();
+            context.stroke();
+            
 
             //render others
+            context.beginPath();
             context.fillStyle = 'red'
             context.strokeStyle="red"
             var mul=2
