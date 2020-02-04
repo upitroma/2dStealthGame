@@ -4,7 +4,7 @@ var socket = io.connect(window.location.href);//change to server's location
 
 var uploadrate=.5//slow for testing
 var playerViewDist=200 //100
-var playerViewAngle=0.785398//45 degrees
+var playerViewAngle=0.785398//45 degrees in radians
 var playerSpeedNormal=50
 var playerTurnSpeed=1
 
@@ -176,8 +176,14 @@ window.onload = function(){
                     var tempWalls=[]
                     me.players.forEach(function(vp){
                         if(vp!=p){//oviously you can see yourself
+
+                            //if in box
                             if(Math.abs(vp.x-p.x)<playerViewDist){
                                 if(Math.abs(vp.y-p.y)<playerViewDist){
+
+                                    if(((vp.x-p.x)*(vp.x-p.x))+((vp.y-p.y)*(vp.y-p.y))<playerViewDist){//if inside circle
+                                        
+                                    }
                                     
                                     //TODO: factor in fov angle
 
