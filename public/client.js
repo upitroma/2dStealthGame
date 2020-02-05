@@ -177,52 +177,62 @@ window.onload = function(){
                     me.players.forEach(function(vp){
                         if(vp!=p){//oviously you can see yourself
 
-                            //if in box
-                            if(Math.abs(vp.x-p.x)<playerViewDist){
-                                if(Math.abs(vp.y-p.y)<playerViewDist){
+                            //if in view range
+                            
 
-                                    if(((vp.x-p.x)*(vp.x-p.x))+((vp.y-p.y)*(vp.y-p.y))<playerViewDist){//if inside circle
-                                        
-                                    }
-                                    
-                                    //TODO: factor in fov angle
+                            if(((vp.x-p.x)*(vp.x-p.x))+((vp.y-p.y)*(vp.y-p.y))<playerViewDist*playerViewDist){//if inside circle
+                                
+                                /*
+                                FIXME: 
+                                right now, players are only rendered if their center is in the fov.
+                                this causes players to seem to teleport into view
+                                this may be solved by increasing the fov a bit, bit i'd rather not hardcode
+                                */
 
-                                    //calculate circular range instaid of square
-
-                                    //relativeAngle = Math.atan2(deltax,deltay)*(180/Math.PI)
-                                    //isInsideCircle = ((x - center_x)^2 + (y - center_y)^2 < radius^2)
-
-
-                                    //calculate angle to vp
-                                    //only render vp if within p's sight
-
-                                    
-                                    console.log("player "+p.id+" can see "+vp.id)
-
-                                    //relative coordinates
-                                    tempVpsx.push(vp.x-p.x)
-                                    tempVpsy.push(p.y-vp.y)
-
-                                }
+                                //relative coordinates
+                                tempVpsx.push(vp.x-p.x)
+                                tempVpsy.push(p.y-vp.y)
                             }
+                            
+                            //TODO: factor in fov angle
+
+                            //TODO: factor in walls in the way
+
+                            //relativeAngle = Math.atan2(deltax,deltay)*(180/Math.PI)
+                            //isInsideCircle = ((x - center_x)^2 + (y - center_y)^2 < radius^2)
+
+
+                            //calculate angle to vp
+                            //only render vp if within p's sight
+                              
                         }
                     })
 
 
                     //debugging server graphics-----------------
+                    context.beginPath();
+                    context.strokeStyle = 'blue';
                     context.fillStyle = 'blue';
                     context.moveTo(p.x+10,p.y)
                     context.arc(p.x, p.y, 10, 0, 2 * Math.PI);// x,y, r, start angle, end angle
                     context.fill();
+                    context.stroke();
+
                     //debugging fov
+                    context.beginPath();
                     context.strokeStyle = 'red';
-                    context.strokeRect(p.x-playerViewDist,p.y-playerViewDist,playerViewDist*2,playerViewDist*2)
+                    context.arc(p.x, p.y, playerViewDist, 0, 2 * Math.PI);
+                    context.stroke();
+
+                    //debugging light
+                    context.beginPath();
+                    context.strokeStyle = 'white';
+                    context.arc(p.x, p.y, playerViewDist , p.angle-(playerViewAngle/2), p.angle+(playerViewAngle/2));
+                    context.stroke();
 
 
                     //TODO: make a startGame() function once pseudoServer is up
-                    //TODO: modify player based on inputs
                     //TODO: calculate what the player can see
-                    //TODO: send said data to the user (probably using hostToSingleClient)
 
                     //send data to player
                     socket.emit("hostToSingleClient",{
