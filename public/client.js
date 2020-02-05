@@ -44,7 +44,7 @@ class Player{
     constructor(x,y,id,isConnected){
         this.x=x
         this.y=y
-        this.angle=90
+        this.angle=0
         this.id=id
         this.isActive=true
         this.isConnected=isConnected
@@ -120,6 +120,7 @@ window.onload = function(){
             if(uploadtimer>uploadrate){
                 // send inputs to pseudoServer
                 sendInputsToHost(keys[87],keys[83],keys[68],keys[65],keys[76],keys[75])
+                console.log(me.angle)
             }
 
             var mul=2
@@ -169,6 +170,12 @@ window.onload = function(){
                     //angle stuff
                     p.angle+=p.inputs.turnRight*playerTurnSpeed*deltatime
                     p.angle-=p.inputs.turnLeft*playerTurnSpeed*deltatime
+                    if(p.angle>(2*Math.PI)){
+                        p.angle=0
+                    }
+                    else if(p.angle<0){
+                        p.angle=2*Math.PI
+                    }
 
                     //calculate what player can see
                     var tempVpsx=[]
@@ -178,9 +185,32 @@ window.onload = function(){
                         if(vp!=p){//oviously you can see yourself
 
                             //if in view range
-                            
-
                             if(((vp.x-p.x)*(vp.x-p.x))+((vp.y-p.y)*(vp.y-p.y))<playerViewDist*playerViewDist){//if inside circle
+
+                                //if in view angle
+                                //var vpAngle = Math.atan2(vp.x-p.x,vp.y-p.y) * 2
+
+                                //https://gamedev.stackexchange.com/questions/114898/frustum-culling-how-to-calculate-if-an-angle-is-between-another-two-angles
+                                var l1x=vp.x-p.x
+                                var l1y=vp.y-p.y
+                                var l1mag=Math.sqrt((l1x*l1x) + (l1y*l1y))
+
+                                var l2x=Math.cos(p.angle)
+                                var l2y=Math.sin(p.angle)
+
+                                var dot=(l1x*l2x) + (l1y*l2y)
+                                var deltaAngle=Math.acos(dot/l1mag)
+
+                                
+                                
+                                
+                                if (Math.abs(deltaAngle)<=playerViewAngle/2){
+                                    
+                                    //relative coordinates
+                                    tempVpsx.push(vp.x-p.x)
+                                    tempVpsy.push(p.y-vp.y)
+                                }
+
                                 
                                 /*
                                 FIXME: 
@@ -189,9 +219,7 @@ window.onload = function(){
                                 this may be solved by increasing the fov a bit, bit i'd rather not hardcode
                                 */
 
-                                //relative coordinates
-                                tempVpsx.push(vp.x-p.x)
-                                tempVpsy.push(p.y-vp.y)
+                                
                             }
                             
                             //TODO: factor in fov angle
