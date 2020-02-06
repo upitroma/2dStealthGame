@@ -2,10 +2,10 @@
 var socket = io.connect(window.location.href);//change to server's location
 
 
-var uploadrate=.5//slow for testing
-var playerViewDist=200 //100
+var uploadrate=.3//slow for testing
+var playerViewDist=400 //100
 var playerViewAngle=0.785398//45 degrees in radians
-var playerSpeedNormal=50
+var playerSpeedNormal=100
 var playerTurnSpeed=1
 
 
@@ -64,11 +64,11 @@ class Player{
 var me=new Player(-1,-1,-1,false)//overwritten when connected to server
 
 class Wall{
-    constructor(x1,x2,y1,y2){
+    constructor(x1,y1,height,width){
         this.x1=x1
-        this.x2=x2
+        this.x2=x1+width
         this.y1=y1
-        this.y2=y2
+        this.y2=y1+height
     }
 }
 
@@ -105,10 +105,8 @@ window.onload = function(){
         65 a
         83 s
         68 d
-
         75 k
         76 l
-
         81 q
         69 e
         */
@@ -120,10 +118,9 @@ window.onload = function(){
             if(uploadtimer>uploadrate){
                 // send inputs to pseudoServer
                 sendInputsToHost(keys[87],keys[83],keys[68],keys[65],keys[76],keys[75])
-                console.log(me.angle)
             }
 
-            var mul=2
+            var mul=1
             
             //render light
             context.beginPath();
@@ -138,8 +135,8 @@ window.onload = function(){
             context.beginPath();
             context.fillStyle = 'blue'
             context.strokeStyle="blue"
-            context.moveTo(me.x+25,me.y)
-            context.arc(me.x, me.y, 25, 0, 2 * Math.PI);
+            context.moveTo(me.x+10,me.y)
+            context.arc(me.x, me.y, 10, 0, 2 * Math.PI);
             context.closePath();
             context.fill();
             context.stroke();
@@ -151,10 +148,12 @@ window.onload = function(){
             context.strokeStyle="red"
             
             me.visiblePlayers.forEach(function(vp){
-                context.moveTo((vp.x*mul)+25+me.x,(-vp.y*mul)+me.y)
-                context.arc((vp.x*mul)+me.x, (-vp.y*mul)+me.y, 25, 0, 2 * Math.PI);
+                context.moveTo((vp.x*mul)+10+me.x,(-vp.y*mul)+me.y)
+                context.arc((vp.x*mul)+me.x, (-vp.y*mul)+me.y, 10, 0, 2 * Math.PI);
             })
             context.stroke();
+
+            //TODO: show other player's fov
 
         }
 
@@ -187,52 +186,33 @@ window.onload = function(){
                             //if in view range
                             if(((vp.x-p.x)*(vp.x-p.x))+((vp.y-p.y)*(vp.y-p.y))<playerViewDist*playerViewDist){//if inside circle
 
-                                //if in view angle
-                                //var vpAngle = Math.atan2(vp.x-p.x,vp.y-p.y) * 2
-
+                                //calculate relative angle
                                 //https://gamedev.stackexchange.com/questions/114898/frustum-culling-how-to-calculate-if-an-angle-is-between-another-two-angles
                                 var l1x=vp.x-p.x
                                 var l1y=vp.y-p.y
                                 var l1mag=Math.sqrt((l1x*l1x) + (l1y*l1y))
-
                                 var l2x=Math.cos(p.angle)
                                 var l2y=Math.sin(p.angle)
-
                                 var dot=(l1x*l2x) + (l1y*l2y)
                                 var deltaAngle=Math.acos(dot/l1mag)
 
-                                
-                                
-                                
-                                if (Math.abs(deltaAngle)<=playerViewAngle/2){
-                                    
+                                if (Math.abs(deltaAngle)<=playerViewAngle/2){//if in viewing angle
+
+                                    //TODO: factor in walls in the way
+
                                     //relative coordinates
                                     tempVpsx.push(vp.x-p.x)
                                     tempVpsy.push(p.y-vp.y)
                                 }
 
-                                
                                 /*
                                 FIXME: 
                                 right now, players are only rendered if their center is in the fov.
                                 this causes players to seem to teleport into view
                                 this may be solved by increasing the fov a bit, bit i'd rather not hardcode
                                 */
-
                                 
                             }
-                            
-                            //TODO: factor in fov angle
-
-                            //TODO: factor in walls in the way
-
-                            //relativeAngle = Math.atan2(deltax,deltay)*(180/Math.PI)
-                            //isInsideCircle = ((x - center_x)^2 + (y - center_y)^2 < radius^2)
-
-
-                            //calculate angle to vp
-                            //only render vp if within p's sight
-                              
                         }
                     })
 
