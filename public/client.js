@@ -41,10 +41,10 @@ class Host{
 }
 
 class Player{
-    constructor(x,y,id,isConnected){
+    constructor(x,y,id,isConnected,angle){
         this.x=x
         this.y=y
-        this.angle=0
+        this.angle=angle
         this.id=id
         this.isActive=true
         this.isConnected=isConnected
@@ -59,9 +59,10 @@ class Player{
         }
         this.visibleWalls=[]
         this.visiblePlayers=[]
+        this.canSeeOtherPlayer=false
     }
 }
-var me=new Player(-1,-1,-1,false)//overwritten when connected to server
+var me=new Player(-1,-1,-1,false,0)//overwritten when connected to server
 
 class Wall{
     constructor(x1,y1,height,width){
@@ -143,13 +144,26 @@ window.onload = function(){
             
 
             //render others
-            context.beginPath();
-            context.fillStyle = 'red'
-            context.strokeStyle="red"
+            
             
             me.visiblePlayers.forEach(function(vp){
+                //fov
+                context.beginPath();
+                context.strokeStyle="white"
+                context.fillStyle = '#edb7ea'
+                context.moveTo((vp.x*mul)+me.x,(-vp.y*mul)+me.y)
+                context.arc((vp.x*mul)+me.x, (-vp.y*mul)+me.y, playerViewDist*mul , vp.angle-(playerViewAngle/2), vp.angle+(playerViewAngle/2));
+                context.fill();
+                context.stroke();
+                //player
+                context.beginPath();
+                context.fillStyle = 'red'
+                context.strokeStyle="red"
                 context.moveTo((vp.x*mul)+10+me.x,(-vp.y*mul)+me.y)
                 context.arc((vp.x*mul)+me.x, (-vp.y*mul)+me.y, 10, 0, 2 * Math.PI);
+                context.closePath();
+                context.fill();
+                context.stroke();
             })
             context.stroke();
 
@@ -162,10 +176,10 @@ window.onload = function(){
             if(me.players.length>0){
                 me.players.forEach(function(p){
                     //y is inverted
-                    p.y-=p.inputs.walkForward*playerSpeedNormal*deltatime
-                    p.y+=p.inputs.walkBackward*playerSpeedNormal*deltatime
-                    p.x+=p.inputs.walkRight*playerSpeedNormal*deltatime
-                    p.x-=p.inputs.walkLeft*playerSpeedNormal*deltatime
+                    p.y-=p.inputs.walkForward*playerSpeedNormal*deltatime*(p.canSeeOtherPlayer+1)
+                    p.y+=p.inputs.walkBackward*playerSpeedNormal*deltatime*(p.canSeeOtherPlayer+1)
+                    p.x+=p.inputs.walkRight*playerSpeedNormal*deltatime*(p.canSeeOtherPlayer+1)
+                    p.x-=p.inputs.walkLeft*playerSpeedNormal*deltatime*(p.canSeeOtherPlayer+1)
                     //angle stuff
                     p.angle+=p.inputs.turnRight*playerTurnSpeed*deltatime
                     p.angle-=p.inputs.turnLeft*playerTurnSpeed*deltatime
@@ -177,8 +191,10 @@ window.onload = function(){
                     }
 
                     //calculate what player can see
+                    p.canSeeOtherPlayer=false
                     var tempVpsx=[]
                     var tempVpsy=[]
+                    var tempVpsa=[]
                     var tempWalls=[]
                     me.players.forEach(function(vp){
                         if(vp!=p){//oviously you can see yourself
@@ -203,6 +219,8 @@ window.onload = function(){
                                     //relative coordinates
                                     tempVpsx.push(vp.x-p.x)
                                     tempVpsy.push(p.y-vp.y)
+                                    tempVpsa.push(vp.angle)
+                                    p.canSeeOtherPlayer=true
                                 }
 
                                 /*
@@ -247,17 +265,13 @@ window.onload = function(){
                         targetId: p.id,
                         angle: p.angle,
                         visiblePlayersX: tempVpsx,
-                        visiblePlayersY: tempVpsy
+                        visiblePlayersY: tempVpsy,
+                        visiblePlayersA: tempVpsa
                     })
 
                 })
             }
         }
-
-
-        //send data
-        
-
 
         context.stroke();
  
@@ -288,7 +302,7 @@ startServerButton.addEventListener("click", function(){
 
 joinServerButton.addEventListener("click",function(){
     joinHost(joinCodeInput.value)
-    me=new Player(-1,-1,-1,false)
+    me=new Player(-1,-1,-1,false,0)
     me.joinCode=joinCodeInput.value
 });
 
@@ -320,9 +334,6 @@ function sendInputsToHost(walkForward,walkBackward,walkRight,walkLeft,turnRight,
         turnRight: turnRight,
         turnLeft: turnLeft
     })
-
-    //console.log("[ ",walkForward,walkBackward,walkRight,walkLeft,turnRight,turnLeft," ] sent to "+me.joinCode)
-
 }
 
 //networking in---------------------------
@@ -338,7 +349,6 @@ socket.on("clientToHost",function(data){
     if(isPseudoServer){
         // record player's inputs
         //new player is added in serverToHost
-        //me.players[data.playerId].inputs=[data.walkForward,data.walkBackward,data.walkLeft,data.turnRight,data.turnLeft]
         me.players[data.playerId].inputs={
             walkForward: data.walkForward,
             walkBackward: data.walkBackward,
@@ -360,7 +370,7 @@ socket.on("ServerToHost",function(data){
         pseudoServerInfo.innerHTML="PseudoServer is up on id: "+me.joinCode
     }
     else{//new player
-        me.players[data]=(new Player(50,50,data,true))
+        me.players[data]=(new Player(50,50,data,true,0))
         socket.emit("hostToSingleClient",{
             targetId: data
         })
@@ -397,7 +407,7 @@ socket.on("hostToSingleClient",function(data){// should probably authenticate si
 
             for(var i=0;i<data.visiblePlayersX.length;i++){
                 //console.log(Math.atan2(data.visiblePlayersX[i],data.visiblePlayersY[i])*180/Math.PI)//0 degrees is north
-                me.visiblePlayers.push(new Player(data.visiblePlayersX[i],data.visiblePlayersY[i],-1,true))//relative coords
+                me.visiblePlayers.push(new Player(data.visiblePlayersX[i],data.visiblePlayersY[i],-1,true,data.visiblePlayersA[i]))//relative coords
             }
             me.angle=data.angle
         }
