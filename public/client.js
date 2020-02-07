@@ -8,6 +8,8 @@ var playerViewAngle=0.785398//45 degrees in radians
 var playerSpeedNormal=100
 var playerTurnSpeed=1
 
+var gridUnitSize=100
+
 
 //get html assets
 var canvas = document.getElementById('canvas'),
@@ -37,6 +39,7 @@ class Host{
         this.id=id
         this.joinCode=joinCode
         this.players=[]
+        this.walls=[]//will be 2d
     }
 }
 
@@ -67,8 +70,12 @@ var me=new Player(-1,-1,-1,false,0)//overwritten when connected to server
 class Wall{
     constructor(x1,y1,height,width){
         this.x1=x1
-        this.x2=x1+width
         this.y1=y1
+        this.height=height
+        this.width=width
+
+        //used for more math
+        this.x2=x1+width
         this.y2=y1+height
     }
 }
@@ -90,6 +97,28 @@ function drawBackground(){
         context.fillStyle = "rgb(19, 19, 32)"
     context.fillRect(0, 0, canvas.width, canvas.height)
 }
+
+//generate map (host)
+var mapIsGenerated=false
+function generateMap(){
+    
+    var u=gridUnitSize
+    var xLen = Math.floor(canvas.width/gridUnitSize)
+    var yLen = Math.floor(canvas.height/gridUnitSize)
+
+    var map=[]
+    for(var r=1;r<yLen-1;r++){
+        var row=[]
+        for(var c=1;c<xLen-1;c++){
+            if(Math.floor(Math.random() * 2) == 0){//flip a coin
+                row.push(new Wall(c*u,r*u,u,u))
+            }
+        }
+        map.push(row)
+    }
+    return map
+}
+
 
 //game logic------------------------------------
 
@@ -257,7 +286,22 @@ window.onload = function(){
                     context.stroke();
 
 
-                    //TODO: make a startGame() function once pseudoServer is up
+                    //enviroment
+                    context.strokeStyle = 'white';
+                    context.fillStyle = 'white';
+                    me.walls.forEach(function(r){
+                        r.forEach(function(w){
+                            context.beginPath();
+                            context.fillRect(w.x1,w.y1,w.width,w.height)
+                            context.stroke();
+                            //console.log(w)
+                        })
+                    })
+                    //console.log(me.walls)
+                    /*
+
+                    */
+                    
                     //TODO: calculate what the player can see
 
                     //send data to player
@@ -368,9 +412,10 @@ socket.on("ServerToHost",function(data){
         console.log("server accepted request. now hosting with code "+data)
         me=new Host(mySocketId,data)
         pseudoServerInfo.innerHTML="PseudoServer is up on id: "+me.joinCode
+        me.walls=generateMap()
     }
     else{//new player
-        me.players[data]=(new Player(50,50,data,true,0))
+        me.players[data]=(new Player(50,50,data,true,0))//TODO: random spawn location and angle
         socket.emit("hostToSingleClient",{
             targetId: data
         })
