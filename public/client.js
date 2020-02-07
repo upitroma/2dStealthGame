@@ -1,6 +1,7 @@
 //Make connection
 var socket = io.connect(window.location.href);//change to server's location
 
+//TODO: var for overall size of the game
 
 var uploadrate=.3//slow for testing
 var playerViewDist=400 //100
@@ -139,6 +140,19 @@ function generateMap(){
 }
 
 
+//https://gamedev.stackexchange.com/questions/114898/frustum-culling-how-to-calculate-if-an-angle-is-between-another-two-angles
+function deltaAngle(px,py,pa,objx,objy){
+    var l1x=objx-px
+    var l1y=objy-py
+    var l1mag=Math.sqrt((l1x*l1x) + (l1y*l1y))
+    var l2x=Math.cos(p.angle)
+    var l2y=Math.sin(p.angle)
+    var dot=(l1x*l2x) + (l1y*l2y)
+    var deltaAngle=Math.acos(dot/l1mag)
+    return deltaAngle
+}
+
+
 //game logic------------------------------------
 
 
@@ -244,23 +258,13 @@ window.onload = function(){
                     var tempVpsy=[]
                     var tempVpsa=[]
                     var tempWalls=[]
-                    me.players.forEach(function(vp){
+                    me.players.forEach(function(vp){//calculate visible players-------------------
                         if(vp!=p){//oviously you can see yourself
 
                             //if in view range
                             if(((vp.x-p.x)*(vp.x-p.x))+((vp.y-p.y)*(vp.y-p.y))<playerViewDist*playerViewDist){//if inside circle
 
-                                //calculate relative angle
-                                //https://gamedev.stackexchange.com/questions/114898/frustum-culling-how-to-calculate-if-an-angle-is-between-another-two-angles
-                                var l1x=vp.x-p.x
-                                var l1y=vp.y-p.y
-                                var l1mag=Math.sqrt((l1x*l1x) + (l1y*l1y))
-                                var l2x=Math.cos(p.angle)
-                                var l2y=Math.sin(p.angle)
-                                var dot=(l1x*l2x) + (l1y*l2y)
-                                var deltaAngle=Math.acos(dot/l1mag)
-
-                                if (Math.abs(deltaAngle)<=playerViewAngle/2){//if in viewing angle
+                                if (Math.abs(deltaAngle(p.x,p.y,p.angle,vp.x,vp.y))<=playerViewAngle/2){//if in viewing angle
 
                                     //TODO: factor in walls in the way
 
@@ -273,14 +277,16 @@ window.onload = function(){
 
                                 /*
                                 FIXME: 
-                                right now, players are only rendered if their center is in the fov.
-                                this causes players to seem to teleport into view
+                                right now, objects are only rendered if their center is in the fov.
+                                this causes objects to seem to teleport into view
                                 this may be solved by increasing the fov a bit, bit i'd rather not hardcode
                                 */
                                 
                             }
                         }
                     })
+
+                    //TODO: calculate visible walls
 
 
                     //debugging server graphics-----------------
