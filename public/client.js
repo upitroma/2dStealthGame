@@ -107,15 +107,39 @@ function generateMap(){
     var yLen = Math.floor(canvas.height/gridUnitSize)
 
     var map=[]
-    for(var r=1;r<yLen-1;r++){
+    for(var r=0;r<yLen;r++){
         var row=[]
-        for(var c=1;c<xLen-1;c++){
-            if(Math.floor(Math.random() * 2) == 0){//flip a coin
-                row.push(new Wall(c*u,r*u,u,u))
+        for(var c=0;c<xLen;c++){
+            //TODO: corner detection
+
+
+            if(r>0 && r<yLen-1 && c>0 && c<xLen-1){//don't care about edges
+
+                if(map[r-1][c-1]===null && map[r-1][c+1]===null){//NO CORNER TOUCHING
+
+                    
+
+                    if(Math.floor(Math.random() * 2) == 0){//flip a coin
+                        row.push(new Wall(c*u,r*u,u,u))
+                    }
+                    else{
+                        row.push(null)
+                    }
+                }
+                else{
+                    row.push(null)
+                }
             }
+            else{
+                row.push(null)
+            }
+            
         }
         map.push(row)
     }
+
+    console.log(map)
+    
     return map
 }
 
@@ -291,9 +315,12 @@ window.onload = function(){
                     context.fillStyle = 'white';
                     me.walls.forEach(function(r){
                         r.forEach(function(w){
-                            context.beginPath();
-                            context.fillRect(w.x1,w.y1,w.width,w.height)
-                            context.stroke();
+                            if(w!=null){
+                                context.beginPath();
+                                context.fillRect(w.x1,w.y1,w.width,w.height)
+                                context.stroke();
+                            }
+                            
                             //console.log(w)
                         })
                     })
