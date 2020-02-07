@@ -8,7 +8,7 @@ var playerViewAngle=0.785398//45 degrees in radians
 var playerSpeedNormal=100
 var playerTurnSpeed=1
 
-var gridUnitSize=50
+var gridUnitSize=100
 
 
 //get html assets
@@ -110,14 +110,8 @@ function generateMap(){
     for(var r=0;r<yLen;r++){
         var row=[]
         for(var c=0;c<xLen;c++){
-            //TODO: corner detection
-
             if(r>0 && r<yLen-2 && c>0 && c<xLen-1){//don't care about edges
-
                 if(map[r-1][c-1]===null && map[r-1][c+1]===null){//NO CORNER TOUCHING
-
-                    
-
                     if(Math.floor(Math.random() * 2) == 0){//flip a coin
                         row.push(new Wall(c*u,r*u,u,u))
                     }
@@ -129,22 +123,18 @@ function generateMap(){
                     row.push(null)
                 }
             }
-            else if (r==yLen-2){
+            else if (r==yLen-2){//second to last row
                 if(c==0 || c==xLen-1){
                     row.push(new Wall(c*u,r*u,u,u))
                 }
                 row.push(null)
             }
-            else{
+            else{//bottom, top, and side walls
                 row.push(new Wall(c*u,r*u,u,u))
             }
-            
         }
         map.push(row)
     }
-
-    console.log(map)
-    
     return map
 }
 
