@@ -5,11 +5,12 @@ var socket = io.connect(window.location.href);//change to server's location
 
 var uploadrate=.3//slow for testing
 var playerViewDist=400 //100
+var playerWallViewDist=200
 var playerViewAngle=0.785398//45 degrees in radians
 var playerSpeedNormal=100
 var playerTurnSpeed=1
 
-var gridUnitSize=50
+var gridUnitSize=75
 
 
 //get html assets
@@ -197,9 +198,9 @@ window.onload = function(){
             context.stroke();
 
             //render self
-            context.beginPath();
             context.fillStyle = 'blue'
             context.strokeStyle="blue"
+            context.beginPath();
             context.moveTo(me.x+10,me.y)
             context.arc(me.x, me.y, 10, 0, 2 * Math.PI);
             context.closePath();
@@ -231,12 +232,14 @@ window.onload = function(){
 
             //TODO: render visible walls
             me.visibleWalls.forEach(function(w){
-                context.fillStyle = 'white'
-                context.strokeStyle="white"
+                context.fillStyle = 'grey'
+                context.strokeStyle="grey"
                 context.fillRect((w.x1*mul)+me.x,(-w.y1*mul)+me.y,w.height*mul,w.width*mul)
                 context.fill();
                 context.stroke();
             })
+            context.fillStyle = 'blue'
+            context.strokeStyle="blue"
 
         }
 
@@ -250,8 +253,8 @@ window.onload = function(){
                     p.x+=p.inputs.walkRight*playerSpeedNormal*deltatime*(p.canSeeOtherPlayer+1)
                     p.x-=p.inputs.walkLeft*playerSpeedNormal*deltatime*(p.canSeeOtherPlayer+1)
                     //angle stuff
-                    p.angle+=p.inputs.turnRight*playerTurnSpeed*deltatime
-                    p.angle-=p.inputs.turnLeft*playerTurnSpeed*deltatime
+                    p.angle+=p.inputs.turnRight*playerTurnSpeed*deltatime*(p.canSeeOtherPlayer+1)
+                    p.angle-=p.inputs.turnLeft*playerTurnSpeed*deltatime*(p.canSeeOtherPlayer+1)
                     if(p.angle>(2*Math.PI)){
                         p.angle=0
                     }
@@ -294,12 +297,16 @@ window.onload = function(){
                         }
                     })
 
-                    //TODO: calculate visible walls
+                    //calculate visible walls
                     me.walls.forEach(function(r){
                         r.forEach(function(w){
                             if(w!=null){
                                 if(((w.centerX-p.x)*(w.centerX-p.x))+((w.centerY-p.y)*(w.centerY-p.y))<playerViewDist*playerViewDist){
                                     if (Math.abs(deltaAngle(p.x,p.y,p.angle,w.centerX,w.centerY))<=playerViewAngle){
+                                        tempWallsX.push(w.x1-p.x)
+                                        tempWallsY.push(p.y-w.y1)
+                                    }
+                                    else if(((w.centerX-p.x)*(w.centerX-p.x))+((w.centerY-p.y)*(w.centerY-p.y))<playerWallViewDist*playerWallViewDist){
                                         tempWallsX.push(w.x1-p.x)
                                         tempWallsY.push(p.y-w.y1)
                                     }
