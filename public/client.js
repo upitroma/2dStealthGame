@@ -27,7 +27,6 @@ var canvas = document.getElementById('canvas'),
 var mySocketId = -1         //default as -1 
 var myJoinCode              //for players connecting to psudoServer
 var isPseudoServer = false  //server just relays data, PseudoServer manages the game 
-                      //later defined as host or player
 
 //hide scrollbar
 //document.body.style.overflow = 'hidden';
