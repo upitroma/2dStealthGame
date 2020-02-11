@@ -208,8 +208,6 @@ window.onload = function(){
             
 
             //render others
-            
-            
             me.visiblePlayers.forEach(function(vp){
                 //fov
                 context.beginPath();
@@ -231,7 +229,14 @@ window.onload = function(){
             })
             context.stroke();
 
-            //TODO: show other player's fov
+            //TODO: render visible walls
+            me.visibleWalls.forEach(function(w){
+                context.fillStyle = 'white'
+                context.strokeStyle="white"
+                context.fillRect(w.x1*mul,w.y1*mul,w.height*mul,w.width*mul)
+                context.fill();
+                context.stroke();
+            })
 
         }
 
@@ -259,7 +264,8 @@ window.onload = function(){
                     var tempVpsx=[]
                     var tempVpsy=[]
                     var tempVpsa=[]
-                    var tempWalls=[]
+                    var tempWallsX=[]
+                    var tempWallsY=[]
                     me.players.forEach(function(vp){//calculate visible players-------------------
                         if(vp!=p){//oviously you can see yourself
 
@@ -289,6 +295,18 @@ window.onload = function(){
                     })
 
                     //TODO: calculate visible walls
+                    me.walls.forEach(function(r){
+                        r.forEach(function(w){
+                            if(w!=null){
+                                if(((w.centerX-p.x)*(w.centerX-p.x))+((w.centerY-p.y)*(w.centerY-p.y))<playerViewDist*playerViewDist){
+                                    if (Math.abs(deltaAngle(p.x,p.y,p.angle,w.centerX,w.centerY))<=playerViewAngle/2){
+                                        tempWallsX.push(w.x-p.x)
+                                        tempWallsY.push(w.y-p.y)
+                                    }
+                                }
+                            }
+                        })
+                    })
 
 
                     //debugging server graphics-----------------
@@ -340,9 +358,10 @@ window.onload = function(){
                         angle: p.angle,
                         visiblePlayersX: tempVpsx,
                         visiblePlayersY: tempVpsy,
-                        visiblePlayersA: tempVpsa
+                        visiblePlayersA: tempVpsa,
+                        visibleWallsX: tempWallsX,
+                        visibleWallsY: tempWallsY
                     })
-
                 })
             }
         }
@@ -479,10 +498,14 @@ socket.on("hostToSingleClient",function(data){// should probably authenticate si
         }
         else{
             me.visiblePlayers=[]
+            me.visibleWalls=[]
 
             for(var i=0;i<data.visiblePlayersX.length;i++){
                 //console.log(Math.atan2(data.visiblePlayersX[i],data.visiblePlayersY[i])*180/Math.PI)//0 degrees is north
                 me.visiblePlayers.push(new Player(data.visiblePlayersX[i],data.visiblePlayersY[i],-1,true,data.visiblePlayersA[i]))//relative coords
+            }
+            for(var i=0;i<data.visibleWallsX.length;i++){
+                me.visibleWalls.push(new Wall(data.visibleWallsX[i],data.visibleWallsY[i],gridUnitSize,gridUnitSize))
             }
             me.angle=data.angle
         }
