@@ -78,8 +78,8 @@ class Wall{
         //used for more math
         this.x2=x1+width
         this.y2=y1+height
-        this.centerX=(x1+width)/2
-        this.centerY=(y1+height)/2
+        this.centerX=x1+(width/2)
+        this.centerY=y1+(height/2)
     }
 }
 
@@ -233,7 +233,7 @@ window.onload = function(){
             me.visibleWalls.forEach(function(w){
                 context.fillStyle = 'white'
                 context.strokeStyle="white"
-                context.fillRect(w.x1*mul,w.y1*mul,w.height*mul,w.width*mul)
+                context.fillRect((w.x1*mul)+me.x,(-w.y1*mul)+me.y,w.height*mul,w.width*mul)
                 context.fill();
                 context.stroke();
             })
@@ -299,9 +299,9 @@ window.onload = function(){
                         r.forEach(function(w){
                             if(w!=null){
                                 if(((w.centerX-p.x)*(w.centerX-p.x))+((w.centerY-p.y)*(w.centerY-p.y))<playerViewDist*playerViewDist){
-                                    if (Math.abs(deltaAngle(p.x,p.y,p.angle,w.centerX,w.centerY))<=playerViewAngle/2){
-                                        tempWallsX.push(w.x-p.x)
-                                        tempWallsY.push(w.y-p.y)
+                                    if (Math.abs(deltaAngle(p.x,p.y,p.angle,w.centerX,w.centerY))<=playerViewAngle){
+                                        tempWallsX.push(w.x1-p.x)
+                                        tempWallsY.push(p.y-w.y1)
                                     }
                                 }
                             }
