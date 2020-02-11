@@ -10,7 +10,7 @@ var playerViewAngle=0.785398//45 degrees in radians
 var playerSpeedNormal=100
 var playerTurnSpeed=1
 
-var gridUnitSize=75
+var gridUnitSize=70
 
 
 //get html assets
@@ -230,7 +230,7 @@ window.onload = function(){
             })
             context.stroke();
 
-            //TODO: render visible walls
+            //render visible walls
             me.visibleWalls.forEach(function(w){
                 context.fillStyle = 'grey'
                 context.strokeStyle="grey"
