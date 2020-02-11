@@ -9,7 +9,7 @@ var playerViewAngle=0.785398//45 degrees in radians
 var playerSpeedNormal=100
 var playerTurnSpeed=1
 
-var gridUnitSize=100
+var gridUnitSize=50
 
 
 //get html assets
@@ -78,6 +78,8 @@ class Wall{
         //used for more math
         this.x2=x1+width
         this.y2=y1+height
+        this.centerX=(x1+width)/2
+        this.centerY=(y1+height)/2
     }
 }
 
@@ -145,8 +147,8 @@ function deltaAngle(px,py,pa,objx,objy){
     var l1x=objx-px
     var l1y=objy-py
     var l1mag=Math.sqrt((l1x*l1x) + (l1y*l1y))
-    var l2x=Math.cos(p.angle)
-    var l2y=Math.sin(p.angle)
+    var l2x=Math.cos(pa)
+    var l2y=Math.sin(pa)
     var dot=(l1x*l2x) + (l1y*l2y)
     var deltaAngle=Math.acos(dot/l1mag)
     return deltaAngle
