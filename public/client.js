@@ -209,6 +209,9 @@ window.onload = function(){
 
             //render others
             me.visiblePlayers.forEach(function(vp){
+
+                //FIXME: multiple players appear red
+
                 //fov
                 context.beginPath();
                 context.strokeStyle="white"
@@ -240,6 +243,19 @@ window.onload = function(){
             context.fillStyle = 'blue'
             context.strokeStyle="blue"
 
+            //cover out of bounds object edges
+            /*
+
+            FIXME: works, but cuts off other players' fov
+
+            context.beginPath()
+            context.strokeStyle="black"
+            context.lineWidth=playerViewDist 
+            context.arc(me.x, me.y, (playerWallViewDist-(gridUnitSize/2)+(playerViewDist/2))*mul , me.angle+(playerViewAngle/2), me.angle-(playerViewAngle/2));
+            context.stroke()
+            context.lineWidth=gridUnitSize/2
+            */
+            
         }
 
         //pseudoServer stuff
