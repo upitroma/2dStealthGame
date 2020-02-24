@@ -262,11 +262,21 @@ window.onload = function(){
         else if(isPseudoServer){
             if(me.players.length>0){
                 me.players.forEach(function(p){
+
+                    //player movement
                     //y is inverted
-                    p.y-=p.inputs.walkForward*playerSpeedNormal*deltatime*(p.canSeeOtherPlayer+1)
-                    p.y+=p.inputs.walkBackward*playerSpeedNormal*deltatime*(p.canSeeOtherPlayer+1)
-                    p.x+=p.inputs.walkRight*playerSpeedNormal*deltatime*(p.canSeeOtherPlayer+1)
-                    p.x-=p.inputs.walkLeft*playerSpeedNormal*deltatime*(p.canSeeOtherPlayer+1)
+                    var deltaY = (
+                        p.inputs.walkBackward*playerSpeedNormal*deltatime*(p.canSeeOtherPlayer+1) 
+                        - p.inputs.walkForward*playerSpeedNormal*deltatime*(p.canSeeOtherPlayer+1)
+                    )
+                    var deltaX=(
+                        p.inputs.walkRight*playerSpeedNormal*deltatime*(p.canSeeOtherPlayer+1)
+                        -p.inputs.walkLeft*playerSpeedNormal*deltatime*(p.canSeeOtherPlayer+1)
+                    )
+
+                    
+                    
+
                     //angle stuff
                     p.angle+=p.inputs.turnRight*playerTurnSpeed*deltatime*(p.canSeeOtherPlayer+1)
                     p.angle-=p.inputs.turnLeft*playerTurnSpeed*deltatime*(p.canSeeOtherPlayer+1)
@@ -325,10 +335,29 @@ window.onload = function(){
                                         tempWallsX.push(w.x1-p.x)
                                         tempWallsY.push(p.y-w.y1)
                                     }
+
+                                    //x collision
+                                    if(p.x+deltaX<w.x2 && p.x+deltaX>w.x1){
+                                        //console.log("collision on x")
+                                        if(p.y<w.y2 && p.y>w.y1){  
+                                            deltaX=0
+                                        }
+                                    }
+                                    //y collision
+                                    if(p.x<w.x2 && p.x>w.x1){
+                                        //console.log("collision on x")
+                                        if(p.y+deltaY<w.y2 && p.y+deltaY>w.y1){  
+                                            deltaY=0
+                                        }
+                                    }
+                                    
                                 }
                             }
                         })
                     })
+
+                    p.y+=deltaY
+                    p.x+=deltaX
 
 
                     //debugging server graphics-----------------
@@ -486,7 +515,7 @@ socket.on("ServerToHost",function(data){
         me.walls=generateMap()
     }
     else{//new player
-        me.players[data]=(new Player(50,50,data,true,0))//TODO: random spawn location and angle
+        me.players[data]=(new Player(100,100,data,true,0))//TODO: random spawn location and angle
         socket.emit("hostToSingleClient",{
             targetId: data
         })
